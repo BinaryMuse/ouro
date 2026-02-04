@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 3 in progress. Config, logging, and ContextManager complete. Agent loop integration next.
+**Current focus:** Phase 3 complete. The agent harness now has full context management with token tracking, masking, wind-down, and automatic session restart. Ready for Phase 4.
 
 ## Current Position
 
 Phase: 3 of 6 (Context Management & Resilience)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-04 -- Completed 03-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-04 -- Completed 03-03-PLAN.md
 
-Progress: [████████████░░░░░░░░] 60%
+Progress: [█████████████████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: 4 min
-- Total execution time: 33 min
+- Total execution time: 38 min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [████████████░░░░░░░░] 60%
 |-------|-------|-------|----------|
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
-| 3. Context Management | 2/3 | 7 min | 3.5 min |
+| 3. Context Management | 3/3 | 12 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (5 min), 02-03 (4 min), 03-01 (3 min), 03-02 (4 min)
+- Last 5 plans: 02-03 (4 min), 03-01 (3 min), 03-02 (4 min), 03-03 (5 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -74,6 +74,10 @@ Recent decisions affecting current work:
 - 03-02: Non-additive prompt_tokens -- Ollama's value IS the full context size, set each turn not summed
 - 03-02: Message replacement via ToolResponse reconstruction (genai MessageContent.parts is private)
 - 03-02: DEFAULT_MASK_BATCH_SIZE = 3 per evaluation round
+- 03-03: Ctrl+C handler moved to main.rs outer loop, shared across sessions via Arc<AtomicBool>
+- 03-03: Carryover extraction uses turn boundaries (text-only assistant responses) to avoid splitting tool pairs
+- 03-03: System prompt always re-read from disk (not cached) -- supports agent self-modification
+- 03-03: LLM stream errors return SessionResult with MaxTurnsOrError instead of breaking inner loop
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04T22:25:40Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-02-04T22:33:37Z
+Stopped at: Completed 03-03-PLAN.md (Phase 3 complete)
 Resume file: None
