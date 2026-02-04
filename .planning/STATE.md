@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 3 complete. The agent harness now has full context management with token tracking, masking, wind-down, and automatic session restart. Ready for Phase 4.
+**Current focus:** Phase 4 in progress. Building the TUI dashboard for real-time agent monitoring. Type foundation (events, state) complete; rendering and integration remain.
 
 ## Current Position
 
-Phase: 3 of 6 (Context Management & Resilience)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-04 -- Completed 03-03-PLAN.md
+Phase: 4 of 6 (TUI Dashboard)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-02-04 -- Completed 04-01-PLAN.md
 
-Progress: [█████████████████░░░] 67%
+Progress: [██████████████████░░] 73%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: 4 min
-- Total execution time: 38 min
+- Total execution time: 41 min
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [█████████████████░░░] 67%
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
+| 4. TUI Dashboard | 1/5 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (4 min), 03-01 (3 min), 03-02 (4 min), 03-03 (5 min)
+- Last 5 plans: 03-01 (3 min), 03-02 (4 min), 03-03 (5 min), 04-01 (3 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -78,6 +79,10 @@ Recent decisions affecting current work:
 - 03-03: Carryover extraction uses turn boundaries (text-only assistant responses) to avoid splitting tool pairs
 - 03-03: System prompt always re-read from disk (not cached) -- supports agent self-modification
 - 03-03: LLM stream errors return SessionResult with MaxTurnsOrError instead of breaking inner loop
+- 04-01: No direct crossterm dependency -- use ratatui::crossterm re-export to avoid version conflicts
+- 04-01: TUI LogEntry separate from agent::logging::LogEntry -- display-oriented vs serialization-oriented
+- 04-01: Thoughts/errors default expanded; tool calls/results default collapsed
+- 04-01: Auto-scroll disabled on scroll_up; re-enabled only by explicit jump_to_bottom
 
 ### Pending Todos
 
@@ -89,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04T22:33:37Z
-Stopped at: Completed 03-03-PLAN.md (Phase 3 complete)
+Last session: 2026-02-04T23:49:59Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
