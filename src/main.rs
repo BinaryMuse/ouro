@@ -72,6 +72,8 @@ async fn main() -> anyhow::Result<()> {
                     session_number,
                     &carryover_messages,
                     shutdown.clone(),
+                    None, // event_tx: no TUI in headless mode
+                    None, // pause_flag: no pause in headless mode
                 )
                 .await?;
 
