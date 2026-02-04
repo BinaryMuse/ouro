@@ -12,7 +12,7 @@ Ouroboros delivers an autonomous AI research harness that runs local Ollama mode
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Safety & Configuration** - Workspace-scoped execution guardrails and user-configurable runtime parameters
+- [x] **Phase 1: Safety & Configuration** - Workspace-scoped execution guardrails and user-configurable runtime parameters
 - [ ] **Phase 2: Core Agent Loop & Basic Tools** - Infinite LLM conversation loop with shell, file, and tool-calling support
 - [ ] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
 - [ ] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
@@ -34,10 +34,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Scaffold Rust project, config module, and CLI parsing
-- [ ] 01-02-PLAN.md -- Command blocklist filter (TDD)
-- [ ] 01-03-PLAN.md -- Workspace boundary guard (TDD)
-- [ ] 01-04-PLAN.md -- Shell execution with timeout and integration wiring
+- [x] 01-01-PLAN.md -- Scaffold Rust project, config module, and CLI parsing
+- [x] 01-02-PLAN.md -- Command blocklist filter (TDD)
+- [x] 01-03-PLAN.md -- Workspace boundary guard (TDD)
+- [x] 01-04-PLAN.md -- Shell execution with timeout and integration wiring
 
 ### Phase 2: Core Agent Loop & Basic Tools
 **Goal**: The agent runs an infinite conversation loop against a local Ollama model, calling tools to execute shell commands and read/write files in its workspace
@@ -128,7 +128,7 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. Safety & Configuration | 0/4 | Planned | - |
+| 1. Safety & Configuration | 4/4 | Complete ✓ | 2026-02-04 |
 | 2. Core Agent Loop & Basic Tools | 0/3 | Not started | - |
 | 3. Context Management & Resilience | 0/2 | Not started | - |
 | 4. TUI Dashboard | 0/3 | Not started | - |

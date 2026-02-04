@@ -49,16 +49,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Safety & Guardrails
 
-- [ ] **SAFE-01**: All file operations are restricted to the agent's workspace directory (path traversal blocked)
-- [ ] **SAFE-02**: Shell commands cannot use sudo or other privilege escalation
-- [ ] **SAFE-03**: Destructive shell patterns are blocked (e.g., rm -rf /, writes outside workspace)
-- [ ] **SAFE-04**: Shell commands enforce a configurable timeout (kill on timeout)
+- [x] **SAFE-01**: All file operations are restricted to the agent's workspace directory (path traversal blocked)
+- [x] **SAFE-02**: Shell commands cannot use sudo or other privilege escalation
+- [x] **SAFE-03**: Destructive shell patterns are blocked (e.g., rm -rf /, writes outside workspace)
+- [x] **SAFE-04**: Shell commands enforce a configurable timeout (kill on timeout)
 
 ### Configuration
 
-- [ ] **CONF-01**: User can specify the Ollama model name via CLI argument or config file
-- [ ] **CONF-02**: User can specify the workspace directory path
-- [ ] **CONF-03**: User can configure shell timeout, context window limits, and other operational parameters
+- [x] **CONF-01**: User can specify the Ollama model name via CLI argument or config file
+- [x] **CONF-02**: User can specify the workspace directory path
+- [x] **CONF-03**: User can configure shell timeout, context window limits, and other operational parameters
 
 ## v2 Requirements
 
@@ -128,13 +128,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOG-01 | Phase 6 | Pending |
 | LOG-02 | Phase 2 | Pending |
 | LOG-03 | Phase 5 | Pending |
-| SAFE-01 | Phase 1 | Pending |
-| SAFE-02 | Phase 1 | Pending |
-| SAFE-03 | Phase 1 | Pending |
-| SAFE-04 | Phase 1 | Pending |
-| CONF-01 | Phase 1 | Pending |
-| CONF-02 | Phase 1 | Pending |
-| CONF-03 | Phase 1 | Pending |
+| SAFE-01 | Phase 1 | Complete |
+| SAFE-02 | Phase 1 | Complete |
+| SAFE-03 | Phase 1 | Complete |
+| SAFE-04 | Phase 1 | Complete |
+| CONF-01 | Phase 1 | Complete |
+| CONF-02 | Phase 1 | Complete |
+| CONF-03 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 32 total
