@@ -537,4 +537,91 @@ mod tests {
         assert!(!is_already_masked("some normal tool output"));
         assert!(!is_already_masked("this contains masked but no bracket"));
     }
+
+    #[test]
+    fn test_mask_oldest_observations_walks_oldest_first() {
+        use genai::chat::ToolCall;
+
+        let mut cm = ContextManager::new(1000, 0.70, 0.90, 5);
+
+        // Build a mini conversation: assistant tool call -> tool response x2
+        let tool_call_1 = ToolCall {
+            call_id: "call_1".to_string(),
+            fn_name: "file_read".to_string(),
+            fn_arguments: serde_json::json!({"path": "foo.txt"}),
+            thought_signatures: None,
+        };
+        let tool_call_2 = ToolCall {
+            call_id: "call_2".to_string(),
+            fn_name: "shell_exec".to_string(),
+            fn_arguments: serde_json::json!({"command": "ls"}),
+            thought_signatures: None,
+        };
+
+        let assistant_msg = ChatMessage::from(vec![tool_call_1, tool_call_2]);
+        let tool_resp_1: ChatMessage =
+            ToolResponse::new("call_1", "line1\nline2\nline3\n").into();
+        let tool_resp_2: ChatMessage = ToolResponse::new(
+            "call_2",
+            r#"{"exit_code":0,"stdout":"file.txt","stderr":""}"#,
+        )
+        .into();
+
+        let mut messages = vec![assistant_msg, tool_resp_1, tool_resp_2];
+
+        // Mask 1 observation
+        let result = mask_oldest_observations(&mut messages, 1, &mut cm);
+        assert_eq!(result.masked_count, 1);
+        assert_eq!(result.total_masked, 1);
+        assert_eq!(cm.masked_count(), 1);
+
+        // First tool response should now be masked
+        let first_tool = &messages[1];
+        let content = extract_tool_content(first_tool);
+        assert!(is_already_masked(&content), "Expected masked, got: {}", content);
+        assert!(content.contains("file_read"));
+        assert!(content.contains("3 lines"));
+
+        // Second tool response should still be unmasked
+        let second_tool = &messages[2];
+        let content2 = extract_tool_content(second_tool);
+        assert!(!is_already_masked(&content2));
+
+        // Mask 1 more -- should get the second one
+        let result2 = mask_oldest_observations(&mut messages, 1, &mut cm);
+        assert_eq!(result2.masked_count, 1);
+        assert_eq!(result2.total_masked, 2);
+
+        let content2_after = extract_tool_content(&messages[2]);
+        assert!(is_already_masked(&content2_after));
+        assert!(content2_after.contains("shell_exec"));
+    }
+
+    #[test]
+    fn test_mask_skips_already_masked() {
+        let mut cm = ContextManager::new(1000, 0.70, 0.90, 5);
+
+        // Create a tool response that is already masked
+        let already_masked: ChatMessage = ToolResponse::new(
+            "call_1",
+            "[file_read result masked -- 5 lines, starts with: foo]",
+        )
+        .into();
+
+        let mut messages = vec![already_masked];
+
+        // Try to mask -- should skip it
+        let result = mask_oldest_observations(&mut messages, 1, &mut cm);
+        assert_eq!(result.masked_count, 0);
+        assert_eq!(result.total_masked, 0);
+    }
+
+    #[test]
+    fn test_generate_mask_notification() {
+        let notification = generate_mask_notification(3, 10, 15.0);
+        assert_eq!(
+            notification,
+            "[Context compressed: 3 observations masked this round, 10 total, ~15% context reclaimed]"
+        );
+    }
 }
