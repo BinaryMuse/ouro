@@ -17,6 +17,11 @@ fn test_config(workspace: &std::path::Path, security_log: PathBuf, timeout: u64)
         context_limit: 8000,
         blocked_patterns: ouro::safety::defaults::default_blocklist(),
         security_log_path: security_log,
+        soft_threshold_pct: 0.70,
+        hard_threshold_pct: 0.90,
+        carryover_turns: 5,
+        max_restarts: None,
+        auto_restart: true,
     }
 }
 

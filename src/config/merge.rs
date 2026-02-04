@@ -14,6 +14,11 @@ impl PartialConfig {
             context_limit: self.context_limit.or(fallback.context_limit),
             blocked_patterns: self.blocked_patterns.or(fallback.blocked_patterns),
             security_log_path: self.security_log_path.or(fallback.security_log_path),
+            soft_threshold_pct: self.soft_threshold_pct.or(fallback.soft_threshold_pct),
+            hard_threshold_pct: self.hard_threshold_pct.or(fallback.hard_threshold_pct),
+            carryover_turns: self.carryover_turns.or(fallback.carryover_turns),
+            max_restarts: self.max_restarts.or(fallback.max_restarts),
+            auto_restart: self.auto_restart.or(fallback.auto_restart),
         }
     }
 
@@ -33,6 +38,11 @@ impl PartialConfig {
             context_limit: self.context_limit.unwrap_or(32768),
             blocked_patterns: self.blocked_patterns.unwrap_or_else(default_blocklist),
             security_log_path,
+            soft_threshold_pct: self.soft_threshold_pct.unwrap_or(0.70),
+            hard_threshold_pct: self.hard_threshold_pct.unwrap_or(0.90),
+            carryover_turns: self.carryover_turns.unwrap_or(5),
+            max_restarts: self.max_restarts.unwrap_or(None),
+            auto_restart: self.auto_restart.unwrap_or(true),
         }
     }
 }
@@ -172,5 +182,69 @@ mod tests {
             PathBuf::from("/var/log/ouro.log"),
             "Explicit security log should override workspace default"
         );
+    }
+
+    #[test]
+    fn test_context_config_defaults() {
+        let empty = PartialConfig::default();
+        let config = empty.finalize();
+
+        assert!((config.soft_threshold_pct - 0.70).abs() < f64::EPSILON);
+        assert!((config.hard_threshold_pct - 0.90).abs() < f64::EPSILON);
+        assert_eq!(config.carryover_turns, 5);
+        assert_eq!(config.max_restarts, None, "max_restarts should default to None (unlimited)");
+        assert!(config.auto_restart, "auto_restart should default to true");
+    }
+
+    #[test]
+    fn test_context_config_override() {
+        let partial = PartialConfig {
+            soft_threshold_pct: Some(0.60),
+            hard_threshold_pct: Some(0.85),
+            carryover_turns: Some(10),
+            max_restarts: Some(Some(3)),
+            auto_restart: Some(false),
+            ..Default::default()
+        };
+        let config = partial.finalize();
+
+        assert!((config.soft_threshold_pct - 0.60).abs() < f64::EPSILON);
+        assert!((config.hard_threshold_pct - 0.85).abs() < f64::EPSILON);
+        assert_eq!(config.carryover_turns, 10);
+        assert_eq!(config.max_restarts, Some(3));
+        assert!(!config.auto_restart);
+    }
+
+    #[test]
+    fn test_context_config_merge_layers() {
+        let cli = PartialConfig {
+            soft_threshold_pct: Some(0.50),
+            ..Default::default()
+        };
+        let workspace = PartialConfig {
+            soft_threshold_pct: Some(0.60),
+            hard_threshold_pct: Some(0.85),
+            carryover_turns: Some(10),
+            ..Default::default()
+        };
+        let global = PartialConfig {
+            soft_threshold_pct: Some(0.75),
+            hard_threshold_pct: Some(0.95),
+            carryover_turns: Some(3),
+            max_restarts: Some(Some(5)),
+            auto_restart: Some(false),
+            ..Default::default()
+        };
+
+        let config = cli
+            .with_fallback(workspace)
+            .with_fallback(global)
+            .finalize();
+
+        assert!((config.soft_threshold_pct - 0.50).abs() < f64::EPSILON, "CLI soft_threshold should win");
+        assert!((config.hard_threshold_pct - 0.85).abs() < f64::EPSILON, "Workspace hard_threshold should win over global");
+        assert_eq!(config.carryover_turns, 10, "Workspace carryover_turns should win over global");
+        assert_eq!(config.max_restarts, Some(5), "Global max_restarts should apply");
+        assert!(!config.auto_restart, "Global auto_restart should apply");
     }
 }

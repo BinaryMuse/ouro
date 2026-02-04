@@ -326,6 +326,11 @@ mod tests {
             context_limit: 8192,
             blocked_patterns: vec![],
             security_log_path: tmp.path().join("security.log"),
+            soft_threshold_pct: 0.70,
+            hard_threshold_pct: 0.90,
+            carryover_turns: 5,
+            max_restarts: None,
+            auto_restart: true,
         };
 
         SafetyLayer::new(&config).unwrap()
