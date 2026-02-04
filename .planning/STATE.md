@@ -5,32 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 1 complete. Ready for Phase 2 - Agent Loop.
+**Current focus:** Phase 2 in progress. Agent module foundation established, session logger complete.
 
 ## Current Position
 
-Phase: 1 of 6 (Safety & Configuration) -- COMPLETE
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-02-04 -- Completed 01-04-PLAN.md
+Phase: 2 of 6 (Core Agent Loop & Basic Tools)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-04 -- Completed 02-01-PLAN.md
 
-Progress: [████░░░░░░░░░░░░░░░░] 20%
+Progress: [█████░░░░░░░░░░░░░░░] 28%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 3 min
-- Total execution time: 14 min
+- Total execution time: 17 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
+| 2. Core Agent Loop | 1/3 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-03 (2 min), 01-02 (3 min), 01-04 (5 min)
+- Last 5 plans: 01-03 (2 min), 01-02 (3 min), 01-04 (5 min), 02-01 (3 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -55,6 +56,10 @@ Recent decisions affecting current work:
 - 01-04: Blocked commands return Ok(ExecResult) with exit_code 126, not Err, for structured agent consumption
 - 01-04: Security log timestamps use SystemTime epoch seconds (no chrono dependency)
 - 01-04: SafetyLayer.execute() is the single entry point for all command execution
+- 02-01: genai resolved to v0.6.0-alpha.2-WIP from git main (not published 0.5.3)
+- 02-01: Synchronous std::fs for SessionLogger -- small buffered writes with flush, no async needed
+- 02-01: Log directory as sibling of workspace: {workspace_parent}/.ouro-logs/
+- 02-01: Session filenames use dashes instead of colons for filesystem safety
 
 ### Pending Todos
 
@@ -66,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Phase 1 complete, verified (5/5 must-haves), ready for Phase 2
+Last session: 2026-02-04T20:13:36Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
