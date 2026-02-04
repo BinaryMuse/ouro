@@ -85,6 +85,36 @@ pub enum LogEntry {
         total_turns: u64,
         reason: String,
     },
+
+    /// Token usage tracked after every model response.
+    #[serde(rename = "token_usage")]
+    TokenUsage {
+        timestamp: String,
+        turn: u64,
+        prompt_tokens: usize,
+        completion_tokens: usize,
+        total_tokens: usize,
+        context_used_pct: f64,
+    },
+
+    /// Logged when observation masking occurs to reclaim context.
+    #[serde(rename = "context_mask")]
+    ContextMask {
+        timestamp: String,
+        observations_masked: usize,
+        total_masked: usize,
+        context_reclaimed_pct: f64,
+    },
+
+    /// Logged when a session restart occurs due to context exhaustion.
+    #[serde(rename = "session_restart")]
+    SessionRestart {
+        timestamp: String,
+        session_number: u32,
+        previous_turns: u64,
+        carryover_messages: usize,
+        reason: String,
+    },
 }
 
 /// Append-only JSONL logger for agent sessions.
@@ -359,6 +389,96 @@ mod tests {
         assert_eq!(entry["event_type"], "tool_result");
         // "error" field should be absent (skip_serializing_if = None)
         assert!(entry.get("error").is_none(), "error field should be absent when None");
+    }
+
+    #[test]
+    fn test_token_usage_event_serialization() {
+        let (mut logger, _tmp) = make_logger();
+
+        logger
+            .log_event(&LogEntry::TokenUsage {
+                timestamp: now_iso(),
+                turn: 7,
+                prompt_tokens: 1200,
+                completion_tokens: 350,
+                total_tokens: 1550,
+                context_used_pct: 0.48,
+            })
+            .unwrap();
+
+        let file = fs::File::open(logger.log_path()).expect("open log");
+        let line = std::io::BufReader::new(file)
+            .lines()
+            .next()
+            .unwrap()
+            .unwrap();
+
+        let entry: serde_json::Value = serde_json::from_str(&line).expect("valid JSON");
+        assert_eq!(entry["event_type"], "token_usage");
+        assert_eq!(entry["turn"], 7);
+        assert_eq!(entry["prompt_tokens"], 1200);
+        assert_eq!(entry["completion_tokens"], 350);
+        assert_eq!(entry["total_tokens"], 1550);
+        assert_eq!(entry["context_used_pct"], 0.48);
+        assert!(entry["timestamp"].is_string());
+    }
+
+    #[test]
+    fn test_context_mask_event_serialization() {
+        let (mut logger, _tmp) = make_logger();
+
+        logger
+            .log_event(&LogEntry::ContextMask {
+                timestamp: now_iso(),
+                observations_masked: 12,
+                total_masked: 45,
+                context_reclaimed_pct: 0.15,
+            })
+            .unwrap();
+
+        let file = fs::File::open(logger.log_path()).expect("open log");
+        let line = std::io::BufReader::new(file)
+            .lines()
+            .next()
+            .unwrap()
+            .unwrap();
+
+        let entry: serde_json::Value = serde_json::from_str(&line).expect("valid JSON");
+        assert_eq!(entry["event_type"], "context_mask");
+        assert_eq!(entry["observations_masked"], 12);
+        assert_eq!(entry["total_masked"], 45);
+        assert_eq!(entry["context_reclaimed_pct"], 0.15);
+        assert!(entry["timestamp"].is_string());
+    }
+
+    #[test]
+    fn test_session_restart_event_serialization() {
+        let (mut logger, _tmp) = make_logger();
+
+        logger
+            .log_event(&LogEntry::SessionRestart {
+                timestamp: now_iso(),
+                session_number: 2,
+                previous_turns: 34,
+                carryover_messages: 5,
+                reason: "hard_threshold_exceeded".to_string(),
+            })
+            .unwrap();
+
+        let file = fs::File::open(logger.log_path()).expect("open log");
+        let line = std::io::BufReader::new(file)
+            .lines()
+            .next()
+            .unwrap()
+            .unwrap();
+
+        let entry: serde_json::Value = serde_json::from_str(&line).expect("valid JSON");
+        assert_eq!(entry["event_type"], "session_restart");
+        assert_eq!(entry["session_number"], 2);
+        assert_eq!(entry["previous_turns"], 34);
+        assert_eq!(entry["carryover_messages"], 5);
+        assert_eq!(entry["reason"], "hard_threshold_exceeded");
+        assert!(entry["timestamp"].is_string());
     }
 
     #[test]
