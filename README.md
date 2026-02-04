@@ -2,8 +2,6 @@
 
 An autonomous AI research harness that runs local Ollama models in an infinite exploration loop.
 
-> **Status:** Under active development. Phase 1 (safety & configuration) is complete; Phase 2 (core agent loop) is in progress.
-
 ## What is this?
 
 Most AI agent frameworks ship with built-in memory systems, planning engines, and tool libraries. Ouroboros inverts that model. It provides a blank workspace and forces the agent to bootstrap its own persistence, memory, and organizational structure using the same tools it uses for everything else.
@@ -38,19 +36,6 @@ Requires Rust 1.85.0+.
 ```
 cargo build
 ```
-
-## Project status
-
-Ouroboros is pre-release software under active development.
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Safety & Configuration | Complete |
-| 2 | Core Agent Loop & Basic Tools | In progress |
-| 3 | Context Management & Resilience | Not started |
-| 4 | TUI Dashboard | Not started |
-| 5 | Sub-Agent Orchestration | Not started |
-| 6 | Extended Tools & Discovery | Not started |
 
 ## License
 
