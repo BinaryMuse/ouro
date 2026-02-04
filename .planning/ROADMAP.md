@@ -81,12 +81,14 @@ Plans:
   3. The TUI displays a panel of agent-flagged discoveries and a high-level progress overview
   4. The user can pause and resume the agent loop, scroll through logs, and navigate panels using keyboard controls
   5. The TUI renders smoothly while the agent is actively executing tool calls (neither blocks the other)
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
+- [ ] 04-01-PLAN.md -- TUI type foundation (events, state, control signals, dependencies)
+- [ ] 04-02-PLAN.md -- Agent loop refactoring for event emission and pause control
+- [ ] 04-03-PLAN.md -- TUI rendering widgets (log stream, status bar, tabs, context gauge)
+- [ ] 04-04-PLAN.md -- TUI main loop, keyboard input, and main.rs launch wiring
+- [ ] 04-05-PLAN.md -- Human verification of TUI functionality
 
 ### Phase 5: Sub-Agent Orchestration
 **Goal**: The agent can spawn and manage child LLM sessions and background shell processes, with the harness enforcing lifecycle management and cleanup
@@ -132,6 +134,6 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | 1. Safety & Configuration | 4/4 | Complete | 2026-02-04 |
 | 2. Core Agent Loop & Basic Tools | 3/3 | Complete | 2026-02-04 |
 | 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
-| 4. TUI Dashboard | 0/3 | Not started | - |
+| 4. TUI Dashboard | 0/5 | Not started | - |
 | 5. Sub-Agent Orchestration | 0/3 | Not started | - |
 | 6. Extended Tools & Discovery | 0/3 | Not started | - |
