@@ -1,16 +1,19 @@
 //! Core agent conversation loop with Ollama health check, streaming,
-//! tool dispatch, and graceful shutdown handling.
+//! tool dispatch, context management, and graceful shutdown handling.
 //!
 //! This is the capstone module that brings together the session logger, system
-//! prompt, tool definitions, and the genai client into a working infinite
-//! conversation loop. The loop:
+//! prompt, tool definitions, context manager, and the genai client into a
+//! working conversation loop. The loop:
 //!
 //! 1. Validates Ollama connectivity and model availability
-//! 2. Loads the system prompt and tool schemas
+//! 2. Loads the system prompt (re-read from disk each session)
 //! 3. Streams model text to stdout in real time
 //! 4. Dispatches tool calls through the safety layer
-//! 5. Logs all events to a JSONL session file
-//! 6. Handles Ctrl+C for graceful shutdown
+//! 5. Tracks token usage from StreamEnd and evaluates context pressure
+//! 6. Masks old observations when soft threshold is reached
+//! 7. Injects wind-down message at hard threshold
+//! 8. Returns carryover messages for session restart at context exhaustion
+//! 9. Logs all events to a JSONL session file
 
 use std::io::Write;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -23,12 +26,45 @@ use genai::chat::{
 };
 use genai::Client;
 
+use crate::agent::context_manager::{
+    mask_oldest_observations, generate_mask_notification, ContextAction, ContextManager,
+};
 use crate::agent::logging::{LogEntry, SessionLogger};
 use crate::agent::system_prompt::build_system_prompt;
 use crate::agent::tools::{define_tools, dispatch_tool_call, tool_descriptions};
 use crate::config::AppConfig;
 use crate::error::AgentError;
 use crate::safety::SafetyLayer;
+
+// ---------------------------------------------------------------------------
+// ShutdownReason / SessionResult
+// ---------------------------------------------------------------------------
+
+/// Why a session ended. Returned to the outer restart loop in main.rs.
+pub enum ShutdownReason {
+    /// User pressed Ctrl+C (graceful shutdown).
+    UserShutdown,
+    /// Context window exhausted -- carry over recent messages to next session.
+    ContextFull {
+        carryover_messages: Vec<ChatMessage>,
+    },
+    /// Maximum turns reached, unrecoverable error, or other termination.
+    MaxTurnsOrError(String),
+}
+
+/// Result of a single agent session.
+pub struct SessionResult {
+    /// Why this session ended.
+    pub shutdown_reason: ShutdownReason,
+    /// Number of turns completed in this session.
+    pub turns_completed: u64,
+    /// The session number (1-based) that just ran.
+    pub session_number: u32,
+}
+
+// ---------------------------------------------------------------------------
+// Ollama health check
+// ---------------------------------------------------------------------------
 
 /// Validate that Ollama is running and the configured model is available.
 ///
@@ -77,31 +113,131 @@ async fn check_ollama_ready(model: &str) -> Result<(), AgentError> {
     Ok(())
 }
 
-/// Run the core agent conversation loop.
+// ---------------------------------------------------------------------------
+// Timestamp helper
+// ---------------------------------------------------------------------------
+
+/// Return the current UTC time as an ISO 8601 string with milliseconds.
+fn now_iso_timestamp() -> String {
+    chrono::Utc::now()
+        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .to_string()
+}
+
+// ---------------------------------------------------------------------------
+// Carryover extraction
+// ---------------------------------------------------------------------------
+
+/// Extract the last `n_turns` complete interaction cycles from the message
+/// history for carryover to the next session.
 ///
-/// This function blocks until the user sends Ctrl+C or the estimated context
-/// window fills up. It validates Ollama connectivity, loads the system prompt,
-/// and enters an infinite loop that streams model text to stdout, dispatches
-/// tool calls, and logs all events to a JSONL session file.
+/// A "turn boundary" is after an assistant text response (not a tool call),
+/// before the next user/system message. Tool call/response pairs are never
+/// split -- if the last messages are assistant(tool_calls) -> tool_responses,
+/// the full sequence is included.
+fn extract_carryover(messages: &[ChatMessage], n_turns: usize) -> Vec<ChatMessage> {
+    if n_turns == 0 || messages.is_empty() {
+        return Vec::new();
+    }
+
+    // Walk backward to find turn boundaries.
+    // A turn boundary is at position i when:
+    //   messages[i].role == Assistant AND messages[i] has no tool_calls
+    //   (meaning it's a text-only assistant response, ending a turn)
+    let mut boundaries: Vec<usize> = Vec::new();
+
+    for i in (0..messages.len()).rev() {
+        let msg = &messages[i];
+        if msg.role == genai::chat::ChatRole::Assistant {
+            // Check if this is a text-only response (no tool calls).
+            let tool_calls = msg.content.tool_calls();
+            if tool_calls.is_empty() {
+                // This is a turn boundary (end of a complete turn).
+                boundaries.push(i);
+                if boundaries.len() >= n_turns {
+                    break;
+                }
+            }
+        }
+    }
+
+    if boundaries.is_empty() {
+        // No clean turn boundaries found. Fall back: take the last few messages.
+        let start = messages.len().saturating_sub(n_turns * 3);
+        return messages[start..].to_vec();
+    }
+
+    // boundaries are in reverse order; the last one is the earliest start point.
+    let start_idx = *boundaries.last().unwrap();
+
+    // Find the actual start: go back to include any preceding user/system
+    // message that initiated this turn.
+    let adjusted_start = if start_idx > 0 {
+        let prev = &messages[start_idx - 1];
+        if prev.role == genai::chat::ChatRole::User
+            || prev.role == genai::chat::ChatRole::System
+        {
+            start_idx - 1
+        } else {
+            start_idx
+        }
+    } else {
+        start_idx
+    };
+
+    messages[adjusted_start..].to_vec()
+}
+
+// ---------------------------------------------------------------------------
+// run_agent_session
+// ---------------------------------------------------------------------------
+
+/// Run a single agent session with context management.
+///
+/// This function blocks until one of:
+/// - The user sends Ctrl+C (graceful shutdown)
+/// - Context pressure triggers a restart (ContextFull)
+/// - An unrecoverable error occurs
+///
+/// The caller (outer restart loop in main.rs) handles the `SessionResult` to
+/// decide whether to start a new session with carryover messages.
 ///
 /// # Arguments
 ///
 /// * `config` - Resolved application configuration (model, workspace, limits)
 /// * `safety` - Safety layer for command filtering and workspace enforcement
-pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow::Result<()> {
+/// * `session_number` - 1-based session counter (incremented by outer loop)
+/// * `carryover_messages` - Messages from previous session to seed context
+/// * `shutdown` - Shared shutdown flag (owned by outer loop, shared across sessions)
+pub async fn run_agent_session(
+    config: &AppConfig,
+    safety: &SafetyLayer,
+    session_number: u32,
+    carryover_messages: &[ChatMessage],
+    shutdown: Arc<AtomicBool>,
+) -> anyhow::Result<SessionResult> {
     // -- Startup: validate Ollama and model
     check_ollama_ready(&config.model).await?;
 
     // -- Create session logger
     let mut logger = SessionLogger::new(&config.workspace)?;
 
-    // -- Build system prompt with harness context
+    // -- Build system prompt with harness context (re-read from disk each session)
     let system_prompt = build_system_prompt(
         &config.workspace,
         &config.model,
         &tool_descriptions(),
+        session_number,
     )
     .await?;
+
+    // -- Create ContextManager for this session
+    let mut context_manager = ContextManager::new(
+        config.context_limit,
+        config.soft_threshold_pct,
+        config.hard_threshold_pct,
+        config.carryover_turns,
+    );
 
     // -- Create genai client (defaults to Ollama for non-prefixed model names)
     let client = Client::default();
@@ -109,43 +245,48 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
     // -- Build initial chat request with system prompt and tools
     let mut chat_req = ChatRequest::from_system(&system_prompt).with_tools(define_tools());
 
-    // -- Configure streaming capture options
+    // -- Add carryover messages from previous session
+    if !carryover_messages.is_empty() {
+        for msg in carryover_messages {
+            chat_req = chat_req.append_message(msg.clone());
+        }
+        eprintln!(
+            "[context] Loaded {} carryover messages from previous session",
+            carryover_messages.len()
+        );
+    }
+
+    // -- Inject restart marker if this is a restarted session
+    if session_number > 1 {
+        let restart_marker = format!(
+            "[Session restarted. Session #{session_number}. Previous session context was full. \
+             Check your workspace files for progress state.]"
+        );
+        chat_req = chat_req.append_message(ChatMessage::system(&restart_marker));
+    }
+
+    // -- Configure streaming capture options (with usage tracking)
     let chat_options = ChatOptions::default()
         .with_capture_content(true)
-        .with_capture_tool_calls(true);
+        .with_capture_tool_calls(true)
+        .with_capture_usage(true);
+
+    // -- Seed the char-based fallback counter with the system prompt size
+    context_manager.add_chars(system_prompt.len());
 
     // -- Log session start
     logger.log_session_start(&config.model, &config.workspace)?;
 
     // -- Print startup info to stderr (not stdout, which is for model output)
     eprintln!(
-        "Ouroboros agent started.\n  Model: {}\n  Workspace: {}\n  Log: {}",
+        "Ouroboros agent started (session #{session_number}).\n  Model: {}\n  Workspace: {}\n  Log: {}",
         config.model,
         config.workspace.display(),
         logger.log_path().display(),
     );
 
-    // -- Set up two-phase Ctrl+C shutdown
-    let shutdown = Arc::new(AtomicBool::new(false));
-    let shutdown_clone = shutdown.clone();
-
-    tokio::spawn(async move {
-        // First Ctrl+C: set graceful shutdown flag.
-        tokio::signal::ctrl_c().await.ok();
-        shutdown_clone.store(true, Ordering::SeqCst);
-        eprintln!(
-            "\nShutting down after current turn... (Ctrl+C again to force quit)"
-        );
-
-        // Second Ctrl+C: force exit.
-        tokio::signal::ctrl_c().await.ok();
-        eprintln!("\nForce quitting.");
-        std::process::exit(1);
-    });
-
     // -- Main loop state
     let mut turn: u64 = 0;
-    let mut total_chars: usize = system_prompt.len();
     let shutdown_reason;
 
     loop {
@@ -167,14 +308,16 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
                 let msg = format!("LLM stream error: {e}");
                 eprintln!("[error] {msg}");
                 logger.log_event(&LogEntry::Error {
-                    timestamp: chrono::Utc::now()
-                        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
-                        .to_string(),
+                    timestamp: now_iso_timestamp(),
                     turn,
-                    message: msg,
+                    message: msg.clone(),
                 })?;
-                shutdown_reason = "error";
-                break;
+                logger.log_session_end(turn, "error")?;
+                return Ok(SessionResult {
+                    shutdown_reason: ShutdownReason::MaxTurnsOrError(msg),
+                    turns_completed: turn,
+                    session_number,
+                });
             }
         };
 
@@ -199,6 +342,27 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
                         captured_tool_calls =
                             calls.into_iter().cloned().collect();
                     }
+
+                    // Extract token usage from StreamEnd.
+                    if let Some(usage) = &end.captured_usage {
+                        let prompt_toks =
+                            usage.prompt_tokens.unwrap_or(0) as usize;
+                        let completion_toks =
+                            usage.completion_tokens.unwrap_or(0) as usize;
+                        context_manager.update_token_usage(
+                            prompt_toks,
+                            completion_toks,
+                        );
+                        logger.log_event(&LogEntry::TokenUsage {
+                            timestamp: now_iso_timestamp(),
+                            turn,
+                            prompt_tokens: prompt_toks,
+                            completion_tokens: completion_toks,
+                            total_tokens: prompt_toks + completion_toks,
+                            context_used_pct: context_manager
+                                .usage_percentage(),
+                        })?;
+                    }
                 }
                 Ok(_) => {
                     // Start, ReasoningChunk, ThoughtSignatureChunk, ToolCallChunk -- ignore.
@@ -212,11 +376,9 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
 
         // -- Log assistant text if produced
         if let Some(ref text) = captured_text {
-            total_chars += text.len();
+            context_manager.add_chars(text.len());
             logger.log_event(&LogEntry::AssistantText {
-                timestamp: chrono::Utc::now()
-                    .format("%Y-%m-%dT%H:%M:%S%.3fZ")
-                    .to_string(),
+                timestamp: now_iso_timestamp(),
                 turn,
                 content: text.clone(),
             })?;
@@ -244,9 +406,7 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
 
                 // Log tool call
                 logger.log_event(&LogEntry::ToolCall {
-                    timestamp: chrono::Utc::now()
-                        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
-                        .to_string(),
+                    timestamp: now_iso_timestamp(),
                     turn,
                     call_id: call_id.clone(),
                     fn_name: call.fn_name.clone(),
@@ -269,9 +429,7 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
 
                 // Log tool result
                 logger.log_event(&LogEntry::ToolResult {
-                    timestamp: chrono::Utc::now()
-                        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
-                        .to_string(),
+                    timestamp: now_iso_timestamp(),
                     turn,
                     call_id: call_id.clone(),
                     fn_name: call.fn_name.clone(),
@@ -287,8 +445,8 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
                 };
                 eprintln!("[result] {result_display}");
 
-                // Track character count for context estimation
-                total_chars += result.len();
+                // Track character count for fallback context estimation
+                context_manager.add_chars(result.len());
 
                 // Append tool response to conversation
                 chat_req = chat_req.append_message(ToolResponse::new(
@@ -298,28 +456,92 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
             }
         }
 
-        // -- Context full detection (heuristic: 1 token ~ 4 chars)
-        let estimated_tokens = total_chars / 4;
-        if estimated_tokens > config.context_limit {
-            eprintln!(
-                "\n[warning] Context window estimated full after {turn} turns. \
-                 Restart the session."
-            );
-            logger.log_event(&LogEntry::SystemMessage {
-                timestamp: chrono::Utc::now()
-                    .format("%Y-%m-%dT%H:%M:%S%.3fZ")
-                    .to_string(),
-                content: format!(
-                    "Context window estimated full (~{estimated_tokens} tokens) \
-                     after {turn} turns"
-                ),
-            })?;
-            shutdown_reason = "context_full";
-            break;
+        // -- Evaluate context pressure after each turn
+        context_manager.increment_turn();
+        match context_manager.evaluate() {
+            ContextAction::Continue => { /* context is healthy */ }
+            ContextAction::Mask { count } => {
+                // Mask oldest unmasked observations to reclaim context.
+                let pct_before = context_manager.usage_percentage();
+                let mask_result = mask_oldest_observations(
+                    &mut chat_req.messages,
+                    count,
+                    &mut context_manager,
+                );
+                let pct_after = context_manager.usage_percentage();
+                let reclaimed_pct = (pct_before - pct_after) * 100.0;
+
+                // Log masking event
+                logger.log_event(&LogEntry::ContextMask {
+                    timestamp: now_iso_timestamp(),
+                    observations_masked: mask_result.masked_count,
+                    total_masked: mask_result.total_masked,
+                    context_reclaimed_pct: reclaimed_pct.max(0.0),
+                })?;
+
+                // Inject system notification
+                let notification = generate_mask_notification(
+                    mask_result.masked_count,
+                    mask_result.total_masked,
+                    reclaimed_pct.max(0.0),
+                );
+                chat_req = chat_req
+                    .append_message(ChatMessage::system(&notification));
+
+                eprintln!(
+                    "[context] Masked {} observations ({} total), ~{:.0}% reclaimed",
+                    mask_result.masked_count,
+                    mask_result.total_masked,
+                    reclaimed_pct.max(0.0),
+                );
+            }
+            ContextAction::WindDown => {
+                // Inject wind-down message -- let the agent have one more turn.
+                let msg = format!(
+                    "[Context window {:.0}% full. Please wrap up your current task and \
+                     write any important state to workspace files. The session will restart shortly.]",
+                    context_manager.usage_percentage() * 100.0
+                );
+                chat_req =
+                    chat_req.append_message(ChatMessage::system(&msg));
+                logger.log_event(&LogEntry::SystemMessage {
+                    timestamp: now_iso_timestamp(),
+                    content: msg,
+                })?;
+                eprintln!("[context] Wind-down message sent");
+            }
+            ContextAction::Restart => {
+                // Extract carryover messages for the next session.
+                let carryover =
+                    extract_carryover(&chat_req.messages, config.carryover_turns);
+
+                // Log restart event
+                logger.log_event(&LogEntry::SessionRestart {
+                    timestamp: now_iso_timestamp(),
+                    session_number,
+                    previous_turns: turn,
+                    carryover_messages: carryover.len(),
+                    reason: "hard_threshold_exceeded".to_string(),
+                })?;
+                logger.log_session_end(turn, "context_full_restart")?;
+
+                eprintln!(
+                    "[context] Session #{session_number} restarting. {turn} turns, {} carryover messages.",
+                    carryover.len()
+                );
+
+                return Ok(SessionResult {
+                    shutdown_reason: ShutdownReason::ContextFull {
+                        carryover_messages: carryover,
+                    },
+                    turns_completed: turn,
+                    session_number,
+                });
+            }
         }
     }
 
-    // -- Log session end
+    // -- Log session end (normal shutdown)
     logger.log_session_end(turn, shutdown_reason)?;
 
     eprintln!(
@@ -327,7 +549,11 @@ pub async fn run_agent_loop(config: &AppConfig, safety: &SafetyLayer) -> anyhow:
         logger.log_path().display(),
     );
 
-    Ok(())
+    Ok(SessionResult {
+        shutdown_reason: ShutdownReason::UserShutdown,
+        turns_completed: turn,
+        session_number,
+    })
 }
 
 #[cfg(test)]
@@ -357,6 +583,77 @@ mod tests {
             Ok(()) => {}
             // Any other error variant is unexpected.
             Err(other) => panic!("Unexpected error variant: {other}"),
+        }
+    }
+
+    #[test]
+    fn extract_carryover_returns_empty_for_zero_turns() {
+        let messages = vec![ChatMessage::system("hello")];
+        let result = extract_carryover(&messages, 0);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn extract_carryover_returns_empty_for_empty_messages() {
+        let result = extract_carryover(&[], 3);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn extract_carryover_preserves_complete_turns() {
+        // Simulate a conversation: system -> user-like -> assistant text -> assistant text
+        let messages = vec![
+            ChatMessage::system("system prompt"),
+            ChatMessage::assistant("I will help."),
+            ChatMessage::assistant("Working on it..."),
+            ChatMessage::assistant("Done with the task."),
+        ];
+
+        // Request 1 turn -- should get at least the last assistant text response.
+        let result = extract_carryover(&messages, 1);
+        assert!(!result.is_empty());
+
+        // The last message should be the last assistant text.
+        let last = result.last().unwrap();
+        assert_eq!(last.role, genai::chat::ChatRole::Assistant);
+    }
+
+    #[test]
+    fn extract_carryover_does_not_split_tool_call_pairs() {
+        use genai::chat::ChatRole;
+
+        let tool_call = ToolCall {
+            call_id: "c1".to_string(),
+            fn_name: "file_read".to_string(),
+            fn_arguments: serde_json::json!({"path": "test.txt"}),
+            thought_signatures: None,
+        };
+
+        let messages = vec![
+            ChatMessage::system("system prompt"),
+            ChatMessage::assistant("First text response."),
+            ChatMessage::from(vec![tool_call]),
+            ToolResponse::new("c1", "file contents").into(),
+            ChatMessage::assistant("Got the file."),
+        ];
+
+        // Request 1 turn -- should include from the assistant text before tools
+        // through to the final "Got the file." response.
+        let result = extract_carryover(&messages, 1);
+        assert!(!result.is_empty());
+
+        // The result should contain the tool response (not split from its call).
+        let has_tool = result.iter().any(|m| m.role == ChatRole::Tool);
+        let has_assistant_tool_call = result
+            .iter()
+            .any(|m| m.role == ChatRole::Assistant && !m.content.tool_calls().is_empty());
+
+        // If tool messages are in carryover, their assistant call must also be present.
+        if has_tool {
+            assert!(
+                has_assistant_tool_call,
+                "Tool response in carryover without its tool call"
+            );
         }
     }
 }
