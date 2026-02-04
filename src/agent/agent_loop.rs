@@ -35,6 +35,7 @@ use crate::agent::tools::{define_tools, dispatch_tool_call, tool_descriptions};
 use crate::config::AppConfig;
 use crate::error::AgentError;
 use crate::safety::SafetyLayer;
+use crate::tui::event::{AgentEvent, AgentState};
 
 // ---------------------------------------------------------------------------
 // ShutdownReason / SessionResult
@@ -209,13 +210,29 @@ fn extract_carryover(messages: &[ChatMessage], n_turns: usize) -> Vec<ChatMessag
 /// * `session_number` - 1-based session counter (incremented by outer loop)
 /// * `carryover_messages` - Messages from previous session to seed context
 /// * `shutdown` - Shared shutdown flag (owned by outer loop, shared across sessions)
+/// * `event_tx` - Optional TUI event channel. When `Some`, agent events are
+///   sent for real-time TUI rendering. When `None`, headless mode (no events).
+/// * `pause_flag` - Optional pause control. When `Some(true)`, the loop blocks
+///   between turns until unpaused. When `None`, pause is never checked.
 pub async fn run_agent_session(
     config: &AppConfig,
     safety: &SafetyLayer,
     session_number: u32,
     carryover_messages: &[ChatMessage],
     shutdown: Arc<AtomicBool>,
+    event_tx: Option<tokio::sync::mpsc::UnboundedSender<AgentEvent>>,
+    pause_flag: Option<Arc<AtomicBool>>,
 ) -> anyhow::Result<SessionResult> {
+    // -- Helper: send event if TUI channel exists, ignore send errors (TUI may have closed)
+    let send_event = {
+        let tx = event_tx.clone();
+        move |event: AgentEvent| {
+            if let Some(ref tx) = tx {
+                let _ = tx.send(event);
+            }
+        }
+    };
+
     // -- Startup: validate Ollama and model
     check_ollama_ready(&config.model).await?;
 
@@ -287,6 +304,7 @@ pub async fn run_agent_session(
 
     // -- Main loop state
     let mut turn: u64 = 0;
+    let mut tool_call_count: u64 = 0;
     let shutdown_reason;
 
     loop {
@@ -296,7 +314,27 @@ pub async fn run_agent_session(
             break;
         }
 
+        // Check pause flag between turns (let current tool finish, pause before next LLM call).
+        if let Some(ref pf) = pause_flag {
+            if pf.load(Ordering::SeqCst) {
+                send_event(AgentEvent::StateChanged(AgentState::Paused));
+                // Spin-wait with small sleep until unpaused or shutdown.
+                while pf.load(Ordering::SeqCst) && !shutdown.load(Ordering::SeqCst) {
+                    tokio::time::sleep(Duration::from_millis(100)).await;
+                }
+                if shutdown.load(Ordering::SeqCst) {
+                    // User quit while paused.
+                    shutdown_reason = "user_shutdown";
+                    break;
+                }
+                send_event(AgentEvent::StateChanged(AgentState::Idle));
+            }
+        }
+
         turn += 1;
+
+        // -- Emit Thinking state before streaming
+        send_event(AgentEvent::StateChanged(AgentState::Thinking));
 
         // -- Stream model response
         let stream_res = match client
@@ -307,6 +345,11 @@ pub async fn run_agent_session(
             Err(e) => {
                 let msg = format!("LLM stream error: {e}");
                 eprintln!("[error] {msg}");
+                send_event(AgentEvent::Error {
+                    timestamp: now_iso_timestamp(),
+                    turn,
+                    message: msg.clone(),
+                });
                 logger.log_event(&LogEntry::Error {
                     timestamp: now_iso_timestamp(),
                     turn,
@@ -362,6 +405,12 @@ pub async fn run_agent_session(
                             context_used_pct: context_manager
                                 .usage_percentage(),
                         })?;
+                        // Emit context pressure event for TUI.
+                        send_event(AgentEvent::ContextPressure {
+                            usage_pct: context_manager.usage_percentage(),
+                            prompt_tokens: prompt_toks,
+                            context_limit: config.context_limit,
+                        });
                     }
                 }
                 Ok(_) => {
@@ -382,6 +431,12 @@ pub async fn run_agent_session(
                 turn,
                 content: text.clone(),
             })?;
+            // Emit thought text event for TUI.
+            send_event(AgentEvent::ThoughtText {
+                timestamp: now_iso_timestamp(),
+                turn,
+                content: text.clone(),
+            });
         }
 
         if captured_tool_calls.is_empty() {
@@ -419,9 +474,22 @@ pub async fn run_agent_session(
                 let args_display = if args_summary.len() > 100 {
                     format!("{}...", &args_summary[..100])
                 } else {
-                    args_summary
+                    args_summary.clone()
                 };
                 eprintln!("[tool] {}({})", call.fn_name, args_display);
+
+                // Emit Executing state and ToolCallStarted event for TUI.
+                send_event(AgentEvent::StateChanged(AgentState::Executing));
+                send_event(AgentEvent::ToolCallStarted {
+                    timestamp: now_iso_timestamp(),
+                    turn,
+                    call_id: call_id.clone(),
+                    fn_name: call.fn_name.clone(),
+                    args_summary: args_summary.clone(),
+                });
+
+                // Track tool call count
+                tool_call_count += 1;
 
                 // Dispatch tool call through safety layer
                 let result =
@@ -445,6 +513,16 @@ pub async fn run_agent_session(
                 };
                 eprintln!("[result] {result_display}");
 
+                // Emit ToolCallCompleted event for TUI.
+                send_event(AgentEvent::ToolCallCompleted {
+                    timestamp: now_iso_timestamp(),
+                    turn,
+                    call_id: call_id.clone(),
+                    fn_name: call.fn_name.clone(),
+                    result_summary: result_display,
+                    full_result: result.clone(),
+                });
+
                 // Track character count for fallback context estimation
                 context_manager.add_chars(result.len());
 
@@ -455,6 +533,13 @@ pub async fn run_agent_session(
                 ));
             }
         }
+
+        // -- Emit counters and transition to Idle between turns
+        send_event(AgentEvent::CountersUpdated {
+            turn,
+            tool_calls: tool_call_count,
+        });
+        send_event(AgentEvent::StateChanged(AgentState::Idle));
 
         // -- Evaluate context pressure after each turn
         context_manager.increment_turn();
@@ -514,6 +599,9 @@ pub async fn run_agent_session(
                 // Extract carryover messages for the next session.
                 let carryover =
                     extract_carryover(&chat_req.messages, config.carryover_turns);
+
+                // Emit session restart event for TUI.
+                send_event(AgentEvent::SessionRestarted { session_number });
 
                 // Log restart event
                 logger.log_event(&LogEntry::SessionRestart {

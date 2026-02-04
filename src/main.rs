@@ -4,6 +4,7 @@ mod config;
 mod error;
 mod exec;
 mod safety;
+mod tui;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
