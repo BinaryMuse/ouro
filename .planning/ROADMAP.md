@@ -31,12 +31,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Destructive shell patterns (rm -rf /, writes to system paths) are blocked with a clear error
   4. Shell commands that exceed the configured timeout are killed and return an error
   5. User can launch the harness specifying an Ollama model name, workspace path, and operational parameters (timeout, context limit) via CLI or config file
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md -- Scaffold Rust project, config module, and CLI parsing
+- [ ] 01-02-PLAN.md -- Command blocklist filter (TDD)
+- [ ] 01-03-PLAN.md -- Workspace boundary guard (TDD)
+- [ ] 01-04-PLAN.md -- Shell execution with timeout and integration wiring
 
 ### Phase 2: Core Agent Loop & Basic Tools
 **Goal**: The agent runs an infinite conversation loop against a local Ollama model, calling tools to execute shell commands and read/write files in its workspace
@@ -127,7 +128,7 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. Safety & Configuration | 0/3 | Not started | - |
+| 1. Safety & Configuration | 0/4 | Planned | - |
 | 2. Core Agent Loop & Basic Tools | 0/3 | Not started | - |
 | 3. Context Management & Resilience | 0/2 | Not started | - |
 | 4. TUI Dashboard | 0/3 | Not started | - |
