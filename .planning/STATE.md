@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 3 in progress. Config and logging foundation laid. ContextManager next.
+**Current focus:** Phase 3 in progress. Config, logging, and ContextManager complete. Agent loop integration next.
 
 ## Current Position
 
 Phase: 3 of 6 (Context Management & Resilience)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-04 -- Completed 03-01-PLAN.md
+Last activity: 2026-02-04 -- Completed 03-02-PLAN.md
 
-Progress: [██████████░░░░░░░░░░] 53%
+Progress: [████████████░░░░░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 4 min
-- Total execution time: 29 min
+- Total execution time: 33 min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [██████████░░░░░░░░░░] 53%
 |-------|-------|-------|----------|
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
-| 3. Context Management | 1/3 | 3 min | 3.0 min |
+| 3. Context Management | 2/3 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (3 min), 02-02 (5 min), 02-03 (4 min), 03-01 (3 min)
+- Last 5 plans: 02-02 (5 min), 02-03 (4 min), 03-01 (3 min), 03-02 (4 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -71,6 +71,9 @@ Recent decisions affecting current work:
 - 02-03: Shutdown flag checked only between turns, not mid-stream
 - 02-03: Stream errors non-fatal -- End event may still arrive after partial errors
 - 03-01: max_restarts uses Option<Option<u32>> in PartialConfig for merge layering (None=unset, Some(None)=unlimited, Some(Some(N))=N restarts)
+- 03-02: Non-additive prompt_tokens -- Ollama's value IS the full context size, set each turn not summed
+- 03-02: Message replacement via ToolResponse reconstruction (genai MessageContent.parts is private)
+- 03-02: DEFAULT_MASK_BATCH_SIZE = 3 per evaluation round
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04T22:18:20Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-02-04T22:25:40Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
