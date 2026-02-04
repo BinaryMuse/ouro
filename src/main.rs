@@ -27,7 +27,6 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.command {
         cli::Commands::Run { .. } => {
-            // Build the safety layer from config.
             let safety = SafetyLayer::new(&config)?;
 
             tracing::info!(
@@ -38,15 +37,8 @@ async fn main() -> anyhow::Result<()> {
                 "Safety layer initialized"
             );
 
-            println!(
-                "Ouroboros initialized. Safety layer active.\n  Model: {}\n  Workspace: {}\n  Timeout: {}s\n  Blocklist patterns: {}\nWaiting for agent loop (Phase 2).",
-                config.model,
-                safety.workspace_root().display(),
-                config.shell_timeout_secs,
-                config.blocked_patterns.len(),
-            );
-
-            // Agent loop will be implemented in Phase 2.
+            // Run the agent loop -- this blocks until shutdown or context full.
+            agent::agent_loop::run_agent_loop(&config, &safety).await?;
         }
         cli::Commands::Resume { .. } => {
             println!("Resume not yet implemented.");
