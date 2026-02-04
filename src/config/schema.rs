@@ -51,3 +51,29 @@ pub struct PartialConfig {
     pub blocked_patterns: Option<Vec<(String, String)>>,
     pub security_log_path: Option<PathBuf>,
 }
+
+impl ConfigFile {
+    /// Convert a parsed TOML config file into a PartialConfig for merging.
+    pub fn to_partial(self) -> PartialConfig {
+        let mut partial = PartialConfig::default();
+
+        if let Some(general) = self.general {
+            partial.model = general.model;
+            partial.workspace = general.workspace.map(PathBuf::from);
+        }
+
+        if let Some(safety) = self.safety {
+            partial.shell_timeout_secs = safety.shell_timeout_secs;
+            partial.context_limit = safety.context_limit;
+            partial.blocked_patterns = safety.blocked_patterns.map(|entries| {
+                entries
+                    .into_iter()
+                    .map(|e| (e.pattern, e.reason))
+                    .collect()
+            });
+            partial.security_log_path = safety.security_log.map(PathBuf::from);
+        }
+
+        partial
+    }
+}
