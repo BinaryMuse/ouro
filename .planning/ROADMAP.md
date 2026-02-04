@@ -49,12 +49,12 @@ Plans:
   3. SYSTEM_PROMPT.md from the workspace is loaded as the system prompt when the agent session starts
   4. All agent actions, tool calls, and results are written to structured append-only log files on disk
   5. The agent loop runs continuously until the user stops it or the context window fills
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md -- Dependencies, agent module scaffold, and JSONL session logger
+- [ ] 02-02-PLAN.md -- System prompt loading and tool definitions with dispatch
+- [ ] 02-03-PLAN.md -- Core agent conversation loop, Ollama health check, and main wiring
 
 ### Phase 3: Context Management & Resilience
 **Goal**: The harness detects context window pressure and restarts the agent session cleanly, preserving the agent's ability to bootstrap from its workspace
