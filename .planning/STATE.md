@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 4 in progress. Building the TUI dashboard for real-time agent monitoring. Type foundation (events, state) complete; rendering and integration remain.
+**Current focus:** Phase 4 in progress. Building the TUI dashboard for real-time agent monitoring. Type foundation and agent loop event emission complete; rendering, input handling, and integration remain.
 
 ## Current Position
 
 Phase: 4 of 6 (TUI Dashboard)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-04 -- Completed 04-01-PLAN.md
+Last activity: 2026-02-04 -- Completed 04-02-PLAN.md
 
-Progress: [██████████████████░░] 73%
+Progress: [███████████████████░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: 4 min
-- Total execution time: 41 min
+- Total execution time: 45 min
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [██████████████████░░] 73%
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
-| 4. TUI Dashboard | 1/5 | 3 min | 3.0 min |
+| 4. TUI Dashboard | 2/5 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (3 min), 03-02 (4 min), 03-03 (5 min), 04-01 (3 min)
+- Last 5 plans: 03-02 (4 min), 03-03 (5 min), 04-01 (3 min), 04-02 (4 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -83,6 +83,10 @@ Recent decisions affecting current work:
 - 04-01: TUI LogEntry separate from agent::logging::LogEntry -- display-oriented vs serialization-oriented
 - 04-01: Thoughts/errors default expanded; tool calls/results default collapsed
 - 04-01: Auto-scroll disabled on scroll_up; re-enabled only by explicit jump_to_bottom
+- 04-02: send_event closure clones Option<Sender> to avoid borrow issues with async function body
+- 04-02: Pause check after shutdown check but before turn increment -- pausing does not consume a turn
+- 04-02: mod tui added to binary crate for agent_loop.rs import resolution
+- 04-02: Headless mode preserved by passing None/None for event_tx/pause_flag
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04T23:49:59Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-02-04T23:56:55Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
