@@ -38,3 +38,28 @@ pub enum ExecError {
     #[error("Process execution failed: {0}")]
     ProcessFailed(String),
 }
+
+/// Errors related to the agent loop and its subsystems.
+#[derive(Debug, thiserror::Error)]
+pub enum AgentError {
+    #[error("Ollama not reachable at {url}: {message}")]
+    OllamaUnavailable { url: String, message: String },
+
+    #[error("Model '{model}' not available in Ollama: {message}")]
+    ModelNotAvailable { model: String, message: String },
+
+    #[error("System prompt not found at {path}")]
+    SystemPromptNotFound { path: PathBuf },
+
+    #[error("LLM error: {0}")]
+    LlmError(String),
+
+    #[error("Tool execution error: {0}")]
+    ToolError(String),
+
+    #[error("Session logging error: {0}")]
+    LoggingError(String),
+
+    #[error("Context window full after {turns} turns")]
+    ContextFull { turns: u64 },
+}
