@@ -6,6 +6,8 @@ mod safety;
 
 use clap::Parser;
 
+use safety::SafetyLayer;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Initialize tracing
@@ -24,12 +26,29 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.command {
         cli::Commands::Run { .. } => {
-            tracing::info!("Run command invoked");
-            // Agent loop will be implemented in Phase 2
+            // Build the safety layer from config.
+            let safety = SafetyLayer::new(&config)?;
+
+            tracing::info!(
+                model = %config.model,
+                workspace = %safety.workspace_root().display(),
+                timeout_secs = config.shell_timeout_secs,
+                blocklist_patterns = config.blocked_patterns.len(),
+                "Safety layer initialized"
+            );
+
+            println!(
+                "Ouroboros initialized. Safety layer active.\n  Model: {}\n  Workspace: {}\n  Timeout: {}s\n  Blocklist patterns: {}\nWaiting for agent loop (Phase 2).",
+                config.model,
+                safety.workspace_root().display(),
+                config.shell_timeout_secs,
+                config.blocked_patterns.len(),
+            );
+
+            // Agent loop will be implemented in Phase 2.
         }
         cli::Commands::Resume { .. } => {
-            tracing::info!("Resume command invoked");
-            // Resume logic will be implemented in Phase 2
+            println!("Resume not yet implemented.");
         }
     }
 
