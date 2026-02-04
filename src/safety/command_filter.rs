@@ -53,16 +53,15 @@ impl CommandFilter {
     ///
     /// Uses [`RegexSet::matches`] for single-pass matching against all patterns.
     pub fn check(&self, command: &str) -> Option<BlockedCommand> {
-        let matches: Vec<_> = self.patterns.matches(command).into_iter().collect();
-        if matches.is_empty() {
-            None
-        } else {
-            Some(BlockedCommand {
+        self.patterns
+            .matches(command)
+            .into_iter()
+            .next()
+            .map(|idx| BlockedCommand {
                 blocked: true,
-                reason: self.pattern_reasons[matches[0]].clone(),
+                reason: self.pattern_reasons[idx].clone(),
                 command: command.to_string(),
             })
-        }
     }
 }
 
