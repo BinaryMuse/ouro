@@ -11,8 +11,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **LOOP-01**: Harness runs an infinite agent loop calling a configurable local Ollama model via genai crate
 - [x] **LOOP-02**: Harness loads SYSTEM_PROMPT.md from the agent's workspace as the system prompt on each session start/restart
-- [ ] **LOOP-03**: Harness tracks token usage and applies observation masking when context approaches the model's limit
-- [ ] **LOOP-04**: When context window fills, harness restarts the agent session with SYSTEM_PROMPT.md — agent must bootstrap its own persistence from workspace files
+- [x] **LOOP-03**: Harness tracks token usage and applies observation masking when context approaches the model's limit
+- [x] **LOOP-04**: When context window fills, harness restarts the agent session with SYSTEM_PROMPT.md — agent must bootstrap its own persistence from workspace files
 - [x] **LOOP-05**: Agent can call tools via genai's tool calling interface; harness dispatches and returns results
 
 ### Tools

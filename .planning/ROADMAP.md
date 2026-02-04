@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Safety & Configuration** - Workspace-scoped execution guardrails and user-configurable runtime parameters
 - [x] **Phase 2: Core Agent Loop & Basic Tools** - Infinite LLM conversation loop with shell, file, and tool-calling support
-- [ ] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
+- [x] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
 - [ ] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
 - [ ] **Phase 5: Sub-Agent Orchestration** - Agent-controlled child LLM sessions and background processes with lifecycle management
 - [ ] **Phase 6: Extended Tools & Discovery** - Web fetching, internet search, sleep/pause, and agent-flagged discovery system
@@ -67,9 +67,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Config fields for context management and new JSONL log entry types
-- [ ] 03-02-PLAN.md -- ContextManager module with token tracking, threshold evaluation, and observation masking
-- [ ] 03-03-PLAN.md -- Agent loop integration with restart loop, carryover, and wind-down
+- [x] 03-01-PLAN.md -- Config fields for context management and new JSONL log entry types
+- [x] 03-02-PLAN.md -- ContextManager module with token tracking, threshold evaluation, and observation masking
+- [x] 03-03-PLAN.md -- Agent loop integration with restart loop, carryover, and wind-down
 
 ### Phase 4: TUI Dashboard
 **Goal**: The user can observe and control the running agent through a rich terminal interface that never blocks agent execution
@@ -131,7 +131,7 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 |-------|---------------|--------|-----------|
 | 1. Safety & Configuration | 4/4 | Complete | 2026-02-04 |
 | 2. Core Agent Loop & Basic Tools | 3/3 | Complete | 2026-02-04 |
-| 3. Context Management & Resilience | 0/3 | Not started | - |
+| 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
 | 4. TUI Dashboard | 0/3 | Not started | - |
 | 5. Sub-Agent Orchestration | 0/3 | Not started | - |
 | 6. Extended Tools & Discovery | 0/3 | Not started | - |
