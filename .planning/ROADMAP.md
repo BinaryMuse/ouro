@@ -64,11 +64,12 @@ Plans:
   1. The harness tracks token usage and applies observation masking (replacing old tool output with compact placeholders) when context approaches the model's limit
   2. When context is exhausted, the harness restarts the agent session with SYSTEM_PROMPT.md and the agent can resume work from workspace files it previously wrote
   3. The agent makes cumulative progress across multiple context window restarts (does not repeat the same work each cycle)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md -- Config fields for context management and new JSONL log entry types
+- [ ] 03-02-PLAN.md -- ContextManager module with token tracking, threshold evaluation, and observation masking
+- [ ] 03-03-PLAN.md -- Agent loop integration with restart loop, carryover, and wind-down
 
 ### Phase 4: TUI Dashboard
 **Goal**: The user can observe and control the running agent through a rich terminal interface that never blocks agent execution
@@ -128,9 +129,9 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. Safety & Configuration | 4/4 | Complete ✓ | 2026-02-04 |
-| 2. Core Agent Loop & Basic Tools | 3/3 | Complete ✓ | 2026-02-04 |
-| 3. Context Management & Resilience | 0/2 | Not started | - |
+| 1. Safety & Configuration | 4/4 | Complete | 2026-02-04 |
+| 2. Core Agent Loop & Basic Tools | 3/3 | Complete | 2026-02-04 |
+| 3. Context Management & Resilience | 0/3 | Not started | - |
 | 4. TUI Dashboard | 0/3 | Not started | - |
 | 5. Sub-Agent Orchestration | 0/3 | Not started | - |
 | 6. Extended Tools & Discovery | 0/3 | Not started | - |
