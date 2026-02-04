@@ -1,42 +1,11 @@
 # Ouroboros
 
-An autonomous AI research harness that runs local Ollama models in an infinite exploration loop.
+An experimental autonomous AI research harness that runs local Ollama models in an infinite exploration loop.
 
 ## What is this?
 
-Most AI agent frameworks ship with built-in memory systems, planning engines, and tool libraries. Ouroboros inverts that model. It provides a blank workspace and forces the agent to bootstrap its own persistence, memory, and organizational structure using the same tools it uses for everything else.
+Ouroboros (ouro) is an autonomous AI research harness that runs local Ollama models in an infinite exploration loop. The agent gets a workspace on disk, shell access, web tools, and the ability to spawn sub-agents — then free reign to explore AI architecture, data processing patterns, creative generation, simulation, and philosophy. The harness provides the infrastructure (agent loop, TUI monitoring, tool execution); the agent provides the curiosity.
 
-The agent runs indefinitely, exploring open-ended topics -- AI architecture, data processing, philosophy, simulation, creative generation -- while building and maintaining its own knowledge systems through files on disk.
+## Context
 
-### Key ideas
-
-- **Workspace-as-memory** -- No vector databases or RAG pipelines. The agent's workspace directory *is* its memory. It reads and writes files to persist knowledge across context window restarts.
-- **Inverse framework design** -- Instead of providing infrastructure, the harness provides constraints (safety boundaries, execution sandboxing) and lets the agent figure out the rest.
-- **Local-first** -- All inference runs on local Ollama models. No cloud API dependencies. Data never leaves your machine.
-- **Agent-controlled sub-agents** -- The agent itself decides when to spawn sub-agents and what to delegate, rather than following a framework-imposed orchestration pattern.
-
-## Tech stack
-
-| Component | Technology |
-|-----------|-----------|
-| Language | Rust (2024 edition) |
-| Async runtime | tokio |
-| LLM client | [genai](https://github.com/jeremychone/rust-genai) |
-| LLM backend | Ollama (local) |
-| Terminal UI | ratatui |
-
-## Architecture
-
-Ouroboros uses an actor-per-component model with tokio channels for message passing. A central Coordinator actor owns all mutable state; every other component (agent loop, tool executor, TUI renderer, sub-agent supervisor) communicates through typed channels. This eliminates shared mutable state and keeps the agent loop decoupled from the UI.
-
-## Building
-
-Requires Rust 1.85.0+.
-
-```
-cargo build
-```
-
-## License
-
-TBD
+The core hypothesis is that a local LLM, given enough freedom and persistence mechanisms, can develop its own exploration patterns, memory systems, and tooling. The agent's first survival challenge is bootstrapping: it must figure out how to persist knowledge across context window restarts using only SYSTEM_PROMPT.md (which the harness guarantees to load) and its workspace.
