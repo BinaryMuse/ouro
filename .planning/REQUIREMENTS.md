@@ -9,17 +9,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Agent Loop
 
-- [ ] **LOOP-01**: Harness runs an infinite agent loop calling a configurable local Ollama model via genai crate
-- [ ] **LOOP-02**: Harness loads SYSTEM_PROMPT.md from the agent's workspace as the system prompt on each session start/restart
+- [x] **LOOP-01**: Harness runs an infinite agent loop calling a configurable local Ollama model via genai crate
+- [x] **LOOP-02**: Harness loads SYSTEM_PROMPT.md from the agent's workspace as the system prompt on each session start/restart
 - [ ] **LOOP-03**: Harness tracks token usage and applies observation masking when context approaches the model's limit
 - [ ] **LOOP-04**: When context window fills, harness restarts the agent session with SYSTEM_PROMPT.md — agent must bootstrap its own persistence from workspace files
-- [ ] **LOOP-05**: Agent can call tools via genai's tool calling interface; harness dispatches and returns results
+- [x] **LOOP-05**: Agent can call tools via genai's tool calling interface; harness dispatches and returns results
 
 ### Tools
 
-- [ ] **TOOL-01**: Agent can execute shell commands scoped to its workspace directory with configurable timeout and output size limits
-- [ ] **TOOL-02**: Agent can read files within its workspace
-- [ ] **TOOL-03**: Agent can write/create files within its workspace
+- [x] **TOOL-01**: Agent can execute shell commands scoped to its workspace directory with configurable timeout and output size limits
+- [x] **TOOL-02**: Agent can read files within its workspace
+- [x] **TOOL-03**: Agent can write/create files within its workspace
 - [ ] **TOOL-04**: Agent can fetch web pages via HTTP and receive extracted content
 - [ ] **TOOL-05**: Agent can search the internet via the websearch crate
 - [ ] **TOOL-06**: Agent can pause itself via a sleep/wait tool (timer-based resume, event-based resume, or user-controlled resume)
@@ -44,7 +44,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Discovery & Logging
 
 - [ ] **LOG-01**: Agent can flag findings as noteworthy via a discovery tool, with title and description
-- [ ] **LOG-02**: All agent actions, tool calls, and results are written to structured append-only log files
+- [x] **LOG-02**: All agent actions, tool calls, and results are written to structured append-only log files
 - [ ] **LOG-03**: Sub-agent and background task output is captured in separate log streams
 
 ### Safety & Guardrails
@@ -103,14 +103,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOOP-01 | Phase 2 | Pending |
-| LOOP-02 | Phase 2 | Pending |
+| LOOP-01 | Phase 2 | Complete |
+| LOOP-02 | Phase 2 | Complete |
 | LOOP-03 | Phase 3 | Pending |
 | LOOP-04 | Phase 3 | Pending |
-| LOOP-05 | Phase 2 | Pending |
-| TOOL-01 | Phase 2 | Pending |
-| TOOL-02 | Phase 2 | Pending |
-| TOOL-03 | Phase 2 | Pending |
+| LOOP-05 | Phase 2 | Complete |
+| TOOL-01 | Phase 2 | Complete |
+| TOOL-02 | Phase 2 | Complete |
+| TOOL-03 | Phase 2 | Complete |
 | TOOL-04 | Phase 6 | Pending |
 | TOOL-05 | Phase 6 | Pending |
 | TOOL-06 | Phase 6 | Pending |
@@ -126,7 +126,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TUI-06 | Phase 4 | Pending |
 | TUI-07 | Phase 4 | Pending |
 | LOG-01 | Phase 6 | Pending |
-| LOG-02 | Phase 2 | Pending |
+| LOG-02 | Phase 2 | Complete |
 | LOG-03 | Phase 5 | Pending |
 | SAFE-01 | Phase 1 | Complete |
 | SAFE-02 | Phase 1 | Complete |

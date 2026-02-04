@@ -13,7 +13,7 @@ Ouroboros delivers an autonomous AI research harness that runs local Ollama mode
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Safety & Configuration** - Workspace-scoped execution guardrails and user-configurable runtime parameters
-- [ ] **Phase 2: Core Agent Loop & Basic Tools** - Infinite LLM conversation loop with shell, file, and tool-calling support
+- [x] **Phase 2: Core Agent Loop & Basic Tools** - Infinite LLM conversation loop with shell, file, and tool-calling support
 - [ ] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
 - [ ] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
 - [ ] **Phase 5: Sub-Agent Orchestration** - Agent-controlled child LLM sessions and background processes with lifecycle management
@@ -52,9 +52,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Dependencies, agent module scaffold, and JSONL session logger
-- [ ] 02-02-PLAN.md -- System prompt loading and tool definitions with dispatch
-- [ ] 02-03-PLAN.md -- Core agent conversation loop, Ollama health check, and main wiring
+- [x] 02-01-PLAN.md -- Dependencies, agent module scaffold, and JSONL session logger
+- [x] 02-02-PLAN.md -- System prompt loading and tool definitions with dispatch
+- [x] 02-03-PLAN.md -- Core agent conversation loop, Ollama health check, and main wiring
 
 ### Phase 3: Context Management & Resilience
 **Goal**: The harness detects context window pressure and restarts the agent session cleanly, preserving the agent's ability to bootstrap from its workspace
@@ -129,7 +129,7 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 1. Safety & Configuration | 4/4 | Complete ✓ | 2026-02-04 |
-| 2. Core Agent Loop & Basic Tools | 0/3 | Not started | - |
+| 2. Core Agent Loop & Basic Tools | 3/3 | Complete ✓ | 2026-02-04 |
 | 3. Context Management & Resilience | 0/2 | Not started | - |
 | 4. TUI Dashboard | 0/3 | Not started | - |
 | 5. Sub-Agent Orchestration | 0/3 | Not started | - |
