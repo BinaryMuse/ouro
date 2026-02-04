@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 2 in progress. System prompt and tool system complete. Agent loop next.
+**Current focus:** Phase 2 complete. Agent loop functional. Ready for Phase 3 (Context Management).
 
 ## Current Position
 
 Phase: 2 of 6 (Core Agent Loop & Basic Tools)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-04 -- Completed 02-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-04 -- Completed 02-03-PLAN.md
 
-Progress: [██████░░░░░░░░░░░░░░] 33%
+Progress: [██████████░░░░░░░░░░] 47%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4 min
-- Total execution time: 22 min
+- Total execution time: 26 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
-| 2. Core Agent Loop | 2/3 | 8 min | 4.0 min |
+| 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (3 min), 01-04 (5 min), 02-01 (3 min), 02-02 (5 min)
+- Last 5 plans: 01-04 (5 min), 02-01 (3 min), 02-02 (5 min), 02-03 (4 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -64,6 +64,11 @@ Recent decisions affecting current work:
 - 02-02: file_read returns raw content; file_write returns JSON with written_bytes
 - 02-02: dispatch_tool_call never returns Err -- all failures are JSON error strings
 - 02-02: file_read accepts relative and absolute paths; file_write only relative
+- 02-03: reqwest added as direct dependency for Ollama health check HTTP calls
+- 02-03: ChatMessage::from(Vec<ToolCall>) for assistant tool-call message construction
+- 02-03: Context-full heuristic: total_chars / 4 > context_limit (Phase 3 replaces with proper tracking)
+- 02-03: Shutdown flag checked only between turns, not mid-stream
+- 02-03: Stream errors non-fatal -- End event may still arrive after partial errors
 
 ### Pending Todos
 
@@ -75,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04T20:21:00Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-02-04T20:27:24Z
+Stopped at: Completed 02-03-PLAN.md (Phase 2 complete)
 Resume file: None
