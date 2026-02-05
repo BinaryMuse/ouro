@@ -44,6 +44,12 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Process management
 nix = { version = "0.29", features = ["signal", "process"] }
 
+# Structured cancellation for sub-agent hierarchy
+tokio-util = "0.7"
+
+# Unique IDs for sub-agents and background processes
+uuid = { version = "1", features = ["v4"] }
+
 # TUI rendering
 ratatui = { version = "0.30", features = ["crossterm"] }
 # crossterm added directly ONLY for "event-stream" feature (EventStream for async keyboard input)
