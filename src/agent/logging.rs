@@ -153,6 +153,30 @@ impl SessionLogger {
         })
     }
 
+    /// Create a session logger writing to a specific directory.
+    ///
+    /// Used by sub-agents that need a dedicated log directory separate from the
+    /// parent session (e.g., `{workspace_parent}/.ouro-logs/sub-{agent_id}/`).
+    pub fn new_in_dir(log_dir: &Path) -> anyhow::Result<Self> {
+        fs::create_dir_all(log_dir)?;
+
+        let session_id = Utc::now()
+            .format("%Y-%m-%dT%H-%M-%S")
+            .to_string();
+        let filename = format!("session-{session_id}.jsonl");
+        let log_path = log_dir.join(filename);
+
+        let file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_path)?;
+
+        Ok(Self {
+            writer: BufWriter::new(file),
+            log_path,
+        })
+    }
+
     /// Compute the log directory for a given workspace path.
     ///
     /// Returns `{workspace_parent}/.ouro-logs/`.
