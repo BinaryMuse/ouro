@@ -7,6 +7,8 @@ pub struct ConfigFile {
     pub general: Option<GeneralConfig>,
     pub safety: Option<SafetyConfig>,
     pub context: Option<ContextConfig>,
+    pub search: Option<SearchConfig>,
+    pub sleep: Option<SleepConfig>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,6 +41,18 @@ pub struct ContextConfig {
     pub auto_restart: Option<bool>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct SearchConfig {
+    pub ddg_rate_limit_secs: Option<f64>,
+    pub brave_api_key: Option<String>,
+    pub brave_rate_limit_secs: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SleepConfig {
+    pub max_sleep_duration_secs: Option<u64>,
+}
+
 /// Fully-resolved runtime configuration. All fields have values.
 #[derive(Debug, Clone)]
 pub struct AppConfig {
@@ -53,6 +67,10 @@ pub struct AppConfig {
     pub carryover_turns: usize,
     pub max_restarts: Option<u32>,
     pub auto_restart: bool,
+    pub ddg_rate_limit_secs: f64,
+    pub brave_api_key: Option<String>,
+    pub brave_rate_limit_secs: f64,
+    pub max_sleep_duration_secs: u64,
 }
 
 /// Partial config used during merge. All fields are Option so that
@@ -70,6 +88,10 @@ pub struct PartialConfig {
     pub carryover_turns: Option<usize>,
     pub max_restarts: Option<Option<u32>>,
     pub auto_restart: Option<bool>,
+    pub ddg_rate_limit_secs: Option<f64>,
+    pub brave_api_key: Option<Option<String>>,
+    pub brave_rate_limit_secs: Option<f64>,
+    pub max_sleep_duration_secs: Option<u64>,
 }
 
 impl ConfigFile {
@@ -101,6 +123,16 @@ impl ConfigFile {
             partial.carryover_turns = context.carryover_turns;
             partial.max_restarts = context.max_restarts.map(Some);
             partial.auto_restart = context.auto_restart;
+        }
+
+        if let Some(search) = self.search {
+            partial.ddg_rate_limit_secs = search.ddg_rate_limit_secs;
+            partial.brave_api_key = search.brave_api_key.map(Some);
+            partial.brave_rate_limit_secs = search.brave_rate_limit_secs;
+        }
+
+        if let Some(sleep) = self.sleep {
+            partial.max_sleep_duration_secs = sleep.max_sleep_duration_secs;
         }
 
         partial

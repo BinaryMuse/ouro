@@ -50,6 +50,12 @@ tokio-util = "0.7"
 # Unique IDs for sub-agents and background processes
 uuid = { version = "1", features = ["v4"] }
 
+# HTML to Markdown conversion for web_fetch tool
+htmd = "0.1"
+
+# HTML parsing for DuckDuckGo search result extraction
+scraper = "0.22"
+
 # TUI rendering
 ratatui = { version = "0.30", features = ["crossterm"] }
 # crossterm added directly ONLY for "event-stream" feature (EventStream for async keyboard input)

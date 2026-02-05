@@ -22,6 +22,10 @@ fn test_config(workspace: &std::path::Path, security_log: PathBuf, timeout: u64)
         carryover_turns: 5,
         max_restarts: None,
         auto_restart: true,
+        ddg_rate_limit_secs: 2.0,
+        brave_api_key: None,
+        brave_rate_limit_secs: 1.0,
+        max_sleep_duration_secs: 3600,
     }
 }
 

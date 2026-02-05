@@ -19,6 +19,12 @@ impl PartialConfig {
             carryover_turns: self.carryover_turns.or(fallback.carryover_turns),
             max_restarts: self.max_restarts.or(fallback.max_restarts),
             auto_restart: self.auto_restart.or(fallback.auto_restart),
+            ddg_rate_limit_secs: self.ddg_rate_limit_secs.or(fallback.ddg_rate_limit_secs),
+            brave_api_key: self.brave_api_key.or(fallback.brave_api_key),
+            brave_rate_limit_secs: self.brave_rate_limit_secs.or(fallback.brave_rate_limit_secs),
+            max_sleep_duration_secs: self
+                .max_sleep_duration_secs
+                .or(fallback.max_sleep_duration_secs),
         }
     }
 
@@ -43,6 +49,10 @@ impl PartialConfig {
             carryover_turns: self.carryover_turns.unwrap_or(5),
             max_restarts: self.max_restarts.unwrap_or(None),
             auto_restart: self.auto_restart.unwrap_or(true),
+            ddg_rate_limit_secs: self.ddg_rate_limit_secs.unwrap_or(2.0),
+            brave_api_key: self.brave_api_key.unwrap_or(None),
+            brave_rate_limit_secs: self.brave_rate_limit_secs.unwrap_or(1.0),
+            max_sleep_duration_secs: self.max_sleep_duration_secs.unwrap_or(3600),
         }
     }
 }
