@@ -44,8 +44,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Process management
 nix = { version = "0.29", features = ["signal", "process"] }
 
-# TUI rendering (crossterm backend re-exported -- do NOT add crossterm directly)
+# TUI rendering
 ratatui = { version = "0.30", features = ["crossterm"] }
+# crossterm added directly ONLY for "event-stream" feature (EventStream for async keyboard input)
+# Must match the version ratatui 0.30 uses internally (0.29) to avoid duplicate types
+crossterm = { version = "0.29", features = ["event-stream"] }
 tui-tree-widget = "0.24"
 
 [dev-dependencies]
