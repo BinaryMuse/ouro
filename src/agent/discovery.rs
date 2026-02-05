@@ -62,6 +62,7 @@ pub fn append_discovery(workspace: &Path, discovery: &Discovery) -> Result<(), S
 /// Returns an empty `Vec` if the file does not exist. Unparseable lines are
 /// silently skipped (lenient reader) so that partial writes from crashes do
 /// not prevent loading the rest of the file.
+#[allow(dead_code)]
 pub fn load_discoveries(workspace: &Path) -> Vec<Discovery> {
     let path = discovery_file_path(workspace);
     let file = match std::fs::File::open(&path) {
@@ -71,7 +72,7 @@ pub fn load_discoveries(workspace: &Path) -> Vec<Discovery> {
 
     std::io::BufReader::new(file)
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .filter_map(|line| serde_json::from_str::<Discovery>(&line).ok())
         .collect()
 }

@@ -30,11 +30,13 @@ use crate::agent::context_manager::{
     mask_oldest_observations, generate_mask_notification, ContextAction, ContextManager,
 };
 use crate::agent::logging::{LogEntry, SessionLogger};
+use crate::agent::sleep::{parse_sleep_args, SleepMode, SleepState};
 use crate::agent::system_prompt::build_system_prompt;
 use crate::agent::tools::{define_tools, dispatch_tool_call, tool_descriptions};
 use crate::config::AppConfig;
 use crate::error::AgentError;
 use crate::orchestration::manager::SubAgentManager;
+use crate::orchestration::types::SubAgentStatus;
 use crate::safety::SafetyLayer;
 use crate::tui::event::{AgentEvent, AgentState};
 
@@ -318,6 +320,7 @@ pub async fn run_agent_session(
     // -- Main loop state
     let mut turn: u64 = 0;
     let mut tool_call_count: u64 = 0;
+    let mut pending_sleep: Option<SleepState> = None;
     let shutdown_reason;
 
     loop {
@@ -553,12 +556,132 @@ pub async fn run_agent_session(
                 // Track character count for fallback context estimation
                 context_manager.add_chars(result.len());
 
+                // Detect sleep tool response and prepare pending sleep
+                if call.fn_name == "sleep"
+                    && let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&result)
+                    && parsed.get("sleep_requested").and_then(|v| v.as_bool()) == Some(true)
+                {
+                    let max_sleep = config.max_sleep_duration_secs;
+                    if let Ok(sleep_state) = parse_sleep_args(&call.fn_arguments, max_sleep) {
+                        pending_sleep = Some(sleep_state);
+                    }
+                }
+
                 // Append tool response to conversation
                 chat_req = chat_req.append_message(ToolResponse::new(
                     call_id.clone(),
                     result,
                 ));
             }
+        }
+
+        // -- Sleep state machine: block between turns if sleep was requested
+        if let Some(ref mut sleep_state) = pending_sleep
+            && sleep_state.active
+        {
+            // Emit Sleeping state to TUI
+            send_event(AgentEvent::StateChanged(AgentState::Sleeping));
+
+            // For manual mode, set the pause_flag so TUI 'r' key can clear it
+            let manual_mode = matches!(sleep_state.mode, SleepMode::Manual);
+            if manual_mode
+                && let Some(ref pf) = pause_flag
+            {
+                pf.store(true, Ordering::SeqCst);
+            }
+
+            if !tui_mode {
+                eprintln!("[sleep] Agent sleeping: {}", sleep_state.remaining_display());
+            }
+
+            // The wake_reason is always assigned before breaking out of the loop.
+            #[allow(unused_assignments)]
+            let mut wake_reason = String::new();
+
+            loop {
+                tokio::time::sleep(Duration::from_millis(500)).await;
+
+                // Check shutdown
+                if shutdown.load(Ordering::SeqCst) {
+                    wake_reason = "shutdown".to_string();
+                    break;
+                }
+
+                // Check max duration safety timeout
+                if sleep_state.is_expired() {
+                    wake_reason = "max_duration_exceeded".to_string();
+                    break;
+                }
+
+                // Mode-specific wake checks
+                match &sleep_state.mode {
+                    SleepMode::Timer(d) => {
+                        if sleep_state.elapsed() >= *d {
+                            wake_reason = "timer_expired".to_string();
+                            break;
+                        }
+                    }
+                    SleepMode::Event { agent_id } => {
+                        if let Some(info) = manager.get_status(agent_id) {
+                            match info.status {
+                                SubAgentStatus::Completed => {
+                                    wake_reason = "agent_completed".to_string();
+                                    break;
+                                }
+                                SubAgentStatus::Failed(ref msg) => {
+                                    wake_reason = format!("agent_failed: {msg}");
+                                    break;
+                                }
+                                SubAgentStatus::Killed => {
+                                    wake_reason = "agent_killed".to_string();
+                                    break;
+                                }
+                                SubAgentStatus::Running => {} // keep sleeping
+                            }
+                        } else {
+                            // Agent not found -- wake immediately
+                            wake_reason = format!("agent_not_found: {agent_id}");
+                            break;
+                        }
+                    }
+                    SleepMode::Manual => {
+                        // Check if user manually resumed from TUI (cleared pause_flag)
+                        if let Some(ref pf) = pause_flag
+                            && !pf.load(Ordering::SeqCst)
+                        {
+                            wake_reason = "user_resumed".to_string();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Wake: record reason and elapsed time
+            let elapsed_secs = sleep_state.elapsed().as_secs_f64();
+            sleep_state.wake(&wake_reason);
+
+            // Inject wake notification as system message
+            let wake_msg = format!(
+                "[Sleep ended. Reason: {wake_reason}. You slept for {elapsed_secs:.1}s]"
+            );
+            chat_req = chat_req.append_message(ChatMessage::system(&wake_msg));
+            context_manager.add_chars(wake_msg.len());
+
+            // Log wake event
+            logger.log_event(&LogEntry::SystemMessage {
+                timestamp: now_iso_timestamp(),
+                content: wake_msg.clone(),
+            })?;
+
+            if !tui_mode {
+                eprintln!("[sleep] {wake_msg}");
+            }
+
+            // Clear pending sleep
+            pending_sleep = None;
+
+            // Restore Idle state
+            send_event(AgentEvent::StateChanged(AgentState::Idle));
         }
 
         // -- Emit counters and transition to Idle between turns

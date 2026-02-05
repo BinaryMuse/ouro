@@ -1016,7 +1016,7 @@ async fn dispatch_web_search(
                 }
             }
         }
-        "duckduckgo" | _ => {
+        _ => {
             web_search::rate_limited_ddg_search(query, count, ddg_rate).await
         }
     }
