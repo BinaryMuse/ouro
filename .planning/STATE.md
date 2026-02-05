@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 4 in progress. Building the TUI dashboard for real-time agent monitoring. Type foundation, event emission, and rendering complete; input handling and main loop integration remain.
+**Current focus:** Phase 4 in progress. TUI dashboard nearly complete: types, events, rendering, input, and main loop all wired. One plan remaining for sub-agent tree polish.
 
 ## Current Position
 
 Phase: 4 of 6 (TUI Dashboard)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-04 -- Completed 04-03-PLAN.md
+Last activity: 2026-02-05 -- Completed 04-04-PLAN.md
 
-Progress: [████████████████████░] 87%
+Progress: [█████████████████████░] 93%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 4 min
-- Total execution time: 51 min
+- Total execution time: 55 min
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [████████████████████░] 87%
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
-| 4. TUI Dashboard | 3/5 | 13 min | 4.3 min |
+| 4. TUI Dashboard | 4/5 | 17 min | 4.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (5 min), 04-01 (3 min), 04-02 (4 min), 04-03 (6 min)
+- Last 5 plans: 04-01 (3 min), 04-02 (4 min), 04-03 (6 min), 04-04 (4 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -91,6 +91,10 @@ Recent decisions affecting current work:
 - 04-03: Entry-to-line offset conversion for scroll position translation
 - 04-03: Sub-agent panel is a Phase 5 placeholder with bordered block and dim text
 - 04-03: Quit dialog uses Clear widget to blank overlay area before drawing confirmation
+- 04-04: crossterm 0.29 added directly for event-stream feature (EventStream not re-exported by ratatui)
+- 04-04: SafetyLayer recreated inside spawned task (not Clone) rather than adding Clone derive
+- 04-04: Config destructure uses .. rest pattern for forward-compatible field additions
+- 04-04: Ctrl+C shutdown message only printed in headless mode (TUI handles quit via 'q' key)
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-04T23:59:56Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-02-05T00:07:41Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None
