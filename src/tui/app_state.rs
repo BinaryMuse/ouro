@@ -227,9 +227,10 @@ impl AppState {
                 self.tool_call_count = tool_calls;
             }
 
-            // Sub-agent status changes are a no-op in the TUI for now.
-            // The TUI integration plan (Phase 5) will wire this into the
-            // sub-agent tree panel rendering.
+            // Sub-agent status changes are a no-op -- the render tick in
+            // runner.rs refreshes sub_agent_entries from the manager every
+            // 50ms, so this event serves only as a notification that
+            // something changed (no additional handling needed).
             AgentEvent::SubAgentStatusChanged { .. } => {}
         }
     }
