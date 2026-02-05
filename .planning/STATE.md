@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 6 in progress. Discovery persistence and sleep state machine modules complete. Tool dispatch wiring and agent loop integration remain.
+**Current focus:** Phase 6 in progress. All 13 tools wired with schemas, dispatch, and descriptions. Discovery guidance in system prompt. Agent loop integration (plan 06-04) remains.
 
 ## Current Position
 
 Phase: 6 of 6 (Extended Tools & Discovery)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-05 -- Completed 06-02-PLAN.md
+Last activity: 2026-02-05 -- Completed 06-03-PLAN.md
 
-Progress: [█████████████████████░░░] 88% (22/25 plans)
+Progress: [██████████████████████░░] 92% (23/25 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: 4 min
-- Total execution time: 91 min
+- Total plans completed: 23
+- Average duration: 4.5 min
+- Total execution time: 103 min
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [█████████████████████░░
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
 | 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
 | 5. Sub-Agent Orchestration | 5/5 | 26 min | 5.2 min |
-| 6. Extended Tools & Discovery | 2/4 | 6 min | 3.0 min |
+| 6. Extended Tools & Discovery | 3/4 | 18 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-04 (6 min), 05-05 (3 min), 06-01 (3 min), 06-02 (3 min)
-- Trend: Phase 6 executing efficiently with parallel wave 1 plans
+- Last 5 plans: 05-05 (3 min), 06-01 (3 min), 06-02 (3 min), 06-03 (12 min)
+- Trend: 06-03 took longer due to parallel plan 06-04 merge conflict resolution
 
 *Updated after each plan completion*
 
@@ -126,6 +126,10 @@ Recent decisions affecting current work:
 - 06-02: SleepState uses std::time::Instant for elapsed tracking (monotonic, no async dependency)
 - 06-02: parse_sleep_args clamps duration to config max_sleep_duration_secs
 - 06-02: Event mode defaults to max_sleep_duration_secs as safety timeout
+- 06-03: dispatch_sleep returns JSON signal (sleep_requested) -- agent loop reads it to enter sleep state machine
+- 06-03: web_search defaults to duckduckgo; wildcard match arm catches all unknown providers
+- 06-03: event_tx as Option<&UnboundedSender<AgentEvent>> enables TUI event emission from tool dispatch
+- 06-03: Discovery guidance in system prompt placed after Constraints, before Session Continuity
 
 ### Pending Todos
 
@@ -137,6 +141,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T03:27:23Z
-Stopped at: Completed 06-01-PLAN.md (summary created)
+Last session: 2026-02-05T03:37:36Z
+Stopped at: Completed 06-03-PLAN.md (summary created)
 Resume file: None
