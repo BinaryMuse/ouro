@@ -33,13 +33,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### TUI Dashboard
 
-- [ ] **TUI-01**: Ratatui-based terminal UI displays a scrollable main agent log (thoughts, tool calls, results)
-- [ ] **TUI-02**: TUI displays a tree view of active sub-agents and background tasks with status
-- [ ] **TUI-03**: TUI displays a panel of agent-flagged discoveries (interesting findings, unexpected results, promising leads)
-- [ ] **TUI-04**: TUI displays high-level progress overview
-- [ ] **TUI-05**: User can pause/resume the agent loop from the TUI
-- [ ] **TUI-06**: User can scroll, navigate, and inspect agent state via keyboard controls
-- [ ] **TUI-07**: TUI runs independently of the agent loop (neither blocks the other)
+- [x] **TUI-01**: Ratatui-based terminal UI displays a scrollable main agent log (thoughts, tool calls, results)
+- [x] **TUI-02**: TUI displays a tree view of active sub-agents and background tasks with status
+- [x] **TUI-03**: TUI displays a panel of agent-flagged discoveries (interesting findings, unexpected results, promising leads)
+- [x] **TUI-04**: TUI displays high-level progress overview
+- [x] **TUI-05**: User can pause/resume the agent loop from the TUI
+- [x] **TUI-06**: User can scroll, navigate, and inspect agent state via keyboard controls
+- [x] **TUI-07**: TUI runs independently of the agent loop (neither blocks the other)
 
 ### Discovery & Logging
 
@@ -105,8 +105,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | LOOP-01 | Phase 2 | Complete |
 | LOOP-02 | Phase 2 | Complete |
-| LOOP-03 | Phase 3 | Pending |
-| LOOP-04 | Phase 3 | Pending |
+| LOOP-03 | Phase 3 | Complete |
+| LOOP-04 | Phase 3 | Complete |
 | LOOP-05 | Phase 2 | Complete |
 | TOOL-01 | Phase 2 | Complete |
 | TOOL-02 | Phase 2 | Complete |
@@ -118,13 +118,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AGENT-02 | Phase 5 | Pending |
 | AGENT-03 | Phase 5 | Pending |
 | AGENT-04 | Phase 5 | Pending |
-| TUI-01 | Phase 4 | Pending |
-| TUI-02 | Phase 4 | Pending |
-| TUI-03 | Phase 4 | Pending |
-| TUI-04 | Phase 4 | Pending |
-| TUI-05 | Phase 4 | Pending |
-| TUI-06 | Phase 4 | Pending |
-| TUI-07 | Phase 4 | Pending |
+| TUI-01 | Phase 4 | Complete |
+| TUI-02 | Phase 4 | Complete |
+| TUI-03 | Phase 4 | Complete |
+| TUI-04 | Phase 4 | Complete |
+| TUI-05 | Phase 4 | Complete |
+| TUI-06 | Phase 4 | Complete |
+| TUI-07 | Phase 4 | Complete |
 | LOG-01 | Phase 6 | Pending |
 | LOG-02 | Phase 2 | Complete |
 | LOG-03 | Phase 5 | Pending |
@@ -143,4 +143,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after roadmap creation*
+*Last updated: 2026-02-05 after Phase 4 completion*

@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Safety & Configuration** - Workspace-scoped execution guardrails and user-configurable runtime parameters
 - [x] **Phase 2: Core Agent Loop & Basic Tools** - Infinite LLM conversation loop with shell, file, and tool-calling support
 - [x] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
-- [ ] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
+- [x] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
 - [ ] **Phase 5: Sub-Agent Orchestration** - Agent-controlled child LLM sessions and background processes with lifecycle management
 - [ ] **Phase 6: Extended Tools & Discovery** - Web fetching, internet search, sleep/pause, and agent-flagged discovery system
 
@@ -84,11 +84,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- TUI type foundation (events, state, control signals, dependencies)
-- [ ] 04-02-PLAN.md -- Agent loop refactoring for event emission and pause control
-- [ ] 04-03-PLAN.md -- TUI rendering widgets (log stream, status bar, tabs, context gauge)
-- [ ] 04-04-PLAN.md -- TUI main loop, keyboard input, and main.rs launch wiring
-- [ ] 04-05-PLAN.md -- Human verification of TUI functionality
+- [x] 04-01-PLAN.md -- TUI type foundation (events, state, control signals, dependencies)
+- [x] 04-02-PLAN.md -- Agent loop refactoring for event emission and pause control
+- [x] 04-03-PLAN.md -- TUI rendering widgets (log stream, status bar, tabs, context gauge)
+- [x] 04-04-PLAN.md -- TUI main loop, keyboard input, and main.rs launch wiring
+- [x] 04-05-PLAN.md -- Human verification of TUI functionality
 
 ### Phase 5: Sub-Agent Orchestration
 **Goal**: The agent can spawn and manage child LLM sessions and background shell processes, with the harness enforcing lifecycle management and cleanup
@@ -134,6 +134,6 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | 1. Safety & Configuration | 4/4 | Complete | 2026-02-04 |
 | 2. Core Agent Loop & Basic Tools | 3/3 | Complete | 2026-02-04 |
 | 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
-| 4. TUI Dashboard | 0/5 | Not started | - |
+| 4. TUI Dashboard | 5/5 | Complete | 2026-02-05 |
 | 5. Sub-Agent Orchestration | 0/3 | Not started | - |
 | 6. Extended Tools & Discovery | 0/3 | Not started | - |

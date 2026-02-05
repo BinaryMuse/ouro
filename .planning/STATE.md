@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 4 in progress. TUI dashboard nearly complete: types, events, rendering, input, and main loop all wired. One plan remaining for sub-agent tree polish.
+**Current focus:** Phase 4 complete. The agent harness now has a full TUI dashboard with real-time event display, keyboard controls, pause/resume, and headless mode fallback. Ready for Phase 5.
 
 ## Current Position
 
 Phase: 4 of 6 (TUI Dashboard)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-02-05 -- Completed 04-04-PLAN.md
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 -- Completed 04-05-PLAN.md (Phase 4 complete)
 
-Progress: [█████████████████████░] 93%
+Progress: [███████████████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 4 min
-- Total execution time: 55 min
+- Total execution time: 59 min
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [█████████████████████░] 9
 | 1. Safety & Config | 4/4 | 14 min | 3.5 min |
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
-| 4. TUI Dashboard | 4/5 | 17 min | 4.3 min |
+| 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (3 min), 04-02 (4 min), 04-03 (6 min), 04-04 (4 min)
+- Last 5 plans: 04-01 (3 min), 04-02 (4 min), 04-03 (6 min), 04-04 (4 min), 04-05 (2 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -95,6 +95,9 @@ Recent decisions affecting current work:
 - 04-04: SafetyLayer recreated inside spawned task (not Clone) rather than adding Clone derive
 - 04-04: Config destructure uses .. rest pattern for forward-compatible field additions
 - 04-04: Ctrl+C shutdown message only printed in headless mode (TUI handles quit via 'q' key)
+- 04-05: TUI mode must suppress all stdout/stderr from agent loop (tui_mode flag guards all print calls)
+- 04-05: Tracing subscriber writes to sink in TUI mode to prevent stderr corruption
+- 04-05: Empty model responses guarded with captured_text.is_some() before println
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T00:07:41Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-02-05T00:30:00Z
+Stopped at: Completed 04-05-PLAN.md (Phase 4 complete)
 Resume file: None
