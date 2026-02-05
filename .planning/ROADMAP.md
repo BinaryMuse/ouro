@@ -100,12 +100,14 @@ Plans:
   3. The harness tracks all sub-agents and background processes, reporting their status (running, completed, failed)
   4. When the harness shuts down, all sub-agents and background processes are terminated cleanly with no orphan processes remaining
   5. Sub-agent and background task output is captured in separate log streams accessible after completion
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+- [ ] 05-01-PLAN.md -- Orchestration types, SubAgentManager registry, and new dependencies
+- [ ] 05-02-PLAN.md -- LLM sub-agent spawner and background process spawner
+- [ ] 05-03-PLAN.md -- Six new agent tools (spawn, status, result, kill, stdin) with dispatch
+- [ ] 05-04-PLAN.md -- Harness wiring (main.rs, runner.rs, agent_loop.rs) and TUI tree panel
+- [ ] 05-05-PLAN.md -- Build verification and human verification of TUI and lifecycle
 
 ### Phase 6: Extended Tools & Discovery
 **Goal**: The agent can fetch web content, search the internet, pause itself, and flag noteworthy findings for the user
@@ -135,5 +137,5 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | 2. Core Agent Loop & Basic Tools | 3/3 | Complete | 2026-02-04 |
 | 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
 | 4. TUI Dashboard | 5/5 | Complete | 2026-02-05 |
-| 5. Sub-Agent Orchestration | 0/3 | Not started | - |
+| 5. Sub-Agent Orchestration | 0/5 | Not started | - |
 | 6. Extended Tools & Discovery | 0/3 | Not started | - |
