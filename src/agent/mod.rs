@@ -2,5 +2,6 @@ pub mod agent_loop;
 pub mod context_manager;
 pub mod discovery;
 pub mod logging;
+pub mod sleep;
 pub mod system_prompt;
 pub mod tools;
