@@ -1448,4 +1448,208 @@ mod tests {
             );
         }
     }
+
+    // -- Extended tool dispatch tests --
+
+    #[tokio::test]
+    async fn dispatch_web_fetch_missing_url() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let call = make_tool_call("web_fetch", json!({}));
+        let result = dispatch_tool_call(&call, &safety, &workspace, None, None, None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert!(parsed["error"].as_str().unwrap().contains("web_fetch"));
+        assert!(parsed["error"].as_str().unwrap().contains("url"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_web_search_missing_query() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let call = make_tool_call("web_search", json!({}));
+        let result = dispatch_tool_call(&call, &safety, &workspace, None, None, None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert!(parsed["error"].as_str().unwrap().contains("web_search"));
+        assert!(parsed["error"].as_str().unwrap().contains("query"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_web_search_brave_without_key() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        // Config without brave key
+        let config = AppConfig {
+            model: "test-model".to_string(),
+            workspace: workspace.clone(),
+            shell_timeout_secs: 10,
+            context_limit: 8192,
+            blocked_patterns: vec![],
+            security_log_path: tmp.path().join("security.log"),
+            soft_threshold_pct: 0.70,
+            hard_threshold_pct: 0.90,
+            carryover_turns: 5,
+            max_restarts: None,
+            auto_restart: true,
+            ddg_rate_limit_secs: 2.0,
+            brave_api_key: None,
+            brave_rate_limit_secs: 1.0,
+            max_sleep_duration_secs: 3600,
+        };
+
+        let call = make_tool_call(
+            "web_search",
+            json!({"query": "test", "provider": "brave"}),
+        );
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, Some(&config), None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert!(parsed["error"].as_str().unwrap().contains("brave_api_key"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_sleep_valid_timer() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let config = AppConfig {
+            model: "test-model".to_string(),
+            workspace: workspace.clone(),
+            shell_timeout_secs: 10,
+            context_limit: 8192,
+            blocked_patterns: vec![],
+            security_log_path: tmp.path().join("security.log"),
+            soft_threshold_pct: 0.70,
+            hard_threshold_pct: 0.90,
+            carryover_turns: 5,
+            max_restarts: None,
+            auto_restart: true,
+            ddg_rate_limit_secs: 2.0,
+            brave_api_key: None,
+            brave_rate_limit_secs: 1.0,
+            max_sleep_duration_secs: 3600,
+        };
+
+        let call = make_tool_call(
+            "sleep",
+            json!({"mode": "timer", "duration_secs": 30}),
+        );
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, Some(&config), None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["sleep_requested"], true);
+        assert!(parsed["mode"].as_str().unwrap().contains("timer"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_sleep_invalid_mode() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let call = make_tool_call("sleep", json!({"mode": "hibernate"}));
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, None, None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert!(parsed["error"].as_str().unwrap().contains("unknown mode"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_flag_discovery_persists_and_returns_confirmation() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let call = make_tool_call(
+            "flag_discovery",
+            json!({"title": "Found Makefile", "description": "Project has build targets"}),
+        );
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, None, None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["flagged"], true);
+        assert_eq!(parsed["title"], "Found Makefile");
+        assert!(parsed["timestamp"].as_str().is_some());
+
+        // Verify discovery was persisted to disk
+        let discoveries = discovery::load_discoveries(&workspace);
+        assert_eq!(discoveries.len(), 1);
+        assert_eq!(discoveries[0].title, "Found Makefile");
+        assert_eq!(discoveries[0].description, "Project has build targets");
+    }
+
+    #[tokio::test]
+    async fn dispatch_flag_discovery_emits_event() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<AgentEvent>();
+
+        let call = make_tool_call(
+            "flag_discovery",
+            json!({"title": "Test Discovery", "description": "Testing event emission"}),
+        );
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, None, Some(&tx)).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["flagged"], true);
+
+        // Check that an event was emitted
+        let event = rx.try_recv().expect("should receive discovery event");
+        match event {
+            AgentEvent::Discovery { title, description, .. } => {
+                assert_eq!(title, "Test Discovery");
+                assert_eq!(description, "Testing event emission");
+            }
+            other => panic!("Expected Discovery event, got: {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn dispatch_flag_discovery_missing_title() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let call = make_tool_call(
+            "flag_discovery",
+            json!({"description": "Missing title"}),
+        );
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, None, None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert!(parsed["error"].as_str().unwrap().contains("title"));
+    }
+
+    #[tokio::test]
+    async fn dispatch_flag_discovery_missing_description() {
+        let tmp = TempDir::new().unwrap();
+        let safety = make_safety(&tmp);
+        let workspace = tmp.path().join("workspace");
+
+        let call = make_tool_call(
+            "flag_discovery",
+            json!({"title": "No description"}),
+        );
+        let result =
+            dispatch_tool_call(&call, &safety, &workspace, None, None, None).await;
+
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert!(parsed["error"].as_str().unwrap().contains("description"));
+    }
 }
