@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 5 in progress. Orchestration module foundation complete -- SubAgentManager registry with types, CancellationToken hierarchy, depth/count limits. Ready for sub-agent spawning implementation.
+**Current focus:** Phase 5 in progress. Sub-agent spawning functions implemented -- LLM sub-agent sessions and background processes with full manager integration. Ready for tool dispatch wiring.
 
 ## Current Position
 
 Phase: 5 of 6 (Sub-Agent Orchestration)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-05 -- Completed 05-01-PLAN.md
+Last activity: 2026-02-05 -- Completed 05-02-PLAN.md
 
-Progress: [████████████████████░] 84%
+Progress: [█████████████████████░] 86%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 4 min
-- Total execution time: 63 min
+- Total execution time: 67 min
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [████████████████████░] 84%
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
 | 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
-| 5. Sub-Agent Orchestration | 1/5 | 4 min | 4.0 min |
+| 5. Sub-Agent Orchestration | 2/5 | 8 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-03 (6 min), 04-04 (4 min), 04-05 (2 min), 05-01 (4 min)
+- Last 5 plans: 04-04 (4 min), 04-05 (2 min), 05-01 (4 min), 05-02 (4 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -104,6 +104,10 @@ Recent decisions affecting current work:
 - 05-01: tokio-util default features (no sync feature needed) -- CancellationToken in default features
 - 05-01: SubAgentManager is Clone (all fields Arc/Clone) rather than requiring Arc wrapper
 - 05-01: Terminal status states (Completed/Failed/Killed) auto-set completed_at timestamp
+- 05-02: Sub-agent prompt injected as carryover system message to run_agent_session (avoids modifying SYSTEM_PROMPT.md)
+- 05-02: CancellationToken bridged to AtomicBool via small spawned task for run_agent_session compatibility
+- 05-02: Background processes bypass SafetyLayer.execute() and spawn via tokio::process::Command directly (need persistent stdin/stdout)
+- 05-02: Output ring buffer capped at 1000 lines with pop_front eviction; stderr prefixed with [stderr]
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T01:37:04Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-02-05T01:43:57Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
