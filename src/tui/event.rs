@@ -72,6 +72,17 @@ pub enum AgentEvent {
         turn: u64,
         tool_calls: u64,
     },
+
+    /// A sub-agent's lifecycle status changed.
+    ///
+    /// Emitted by the [`crate::orchestration::manager::SubAgentManager`] when
+    /// an agent transitions state (spawned, completed, failed, killed).
+    /// The TUI integration plan will wire this into the sub-agent tree panel.
+    SubAgentStatusChanged {
+        agent_id: String,
+        status: String,
+        kind: String,
+    },
 }
 
 /// The four visible agent states shown in the status bar.
