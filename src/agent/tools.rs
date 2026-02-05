@@ -242,7 +242,46 @@ Write content to a file within the workspace directory.
 - **content** (string, required): Content to write to the file
 - Returns: JSON with written_bytes and path fields
 - Parent directories are created automatically
-- Writes outside the workspace directory are rejected"
+- Writes outside the workspace directory are rejected
+
+### spawn_llm_session
+Spawn a child LLM chat session that runs concurrently.
+- **goal** (string, required): What the sub-agent should accomplish
+- **model** (string, optional): Ollama model name (defaults to your model)
+- **context** (object, optional): Key-value context injected into the sub-agent's prompt
+- **timeout_secs** (integer, optional): Maximum runtime in seconds
+- **tools** (array of strings, optional): Tool names to enable (default: all your tools)
+- Returns: JSON with agent_id and status fields
+- The sub-agent runs independently and you can check its progress via agent_status
+
+### spawn_background_task
+Spawn a background shell process that runs independently.
+- **command** (string, required): The shell command to run
+- Returns: JSON with agent_id and status fields
+- The process runs in the background; use agent_status to check progress
+- Use write_stdin to send input to the process
+
+### agent_status
+Query the status of sub-agents and background processes.
+- **agent_id** (string, optional): Specific agent ID to query (omit for all)
+- Returns: JSON with agent info including status (running/completed/failed/killed)
+
+### agent_result
+Retrieve the structured result of a completed sub-agent.
+- **agent_id** (string, required): The agent ID to retrieve results for
+- Returns: JSON with summary, output, files_modified, elapsed_secs
+- Returns error if the agent is still running
+
+### kill_agent
+Terminate a running sub-agent or background process.
+- **agent_id** (string, required): The agent ID to terminate
+- Returns: JSON with killed status
+
+### write_stdin
+Write data to a running background process's stdin.
+- **agent_id** (string, required): The background process ID
+- **data** (string, required): Data to write (newline appended automatically)
+- Returns: JSON with written_bytes"
         .to_string()
 }
 
@@ -826,7 +865,13 @@ mod tests {
         assert!(desc.contains("### shell_exec"));
         assert!(desc.contains("### file_read"));
         assert!(desc.contains("### file_write"));
-        // Sub-agent tools (descriptions added in Task 2)
+        // Sub-agent orchestration tools
+        assert!(desc.contains("### spawn_llm_session"));
+        assert!(desc.contains("### spawn_background_task"));
+        assert!(desc.contains("### agent_status"));
+        assert!(desc.contains("### agent_result"));
+        assert!(desc.contains("### kill_agent"));
+        assert!(desc.contains("### write_stdin"));
     }
 
     /// Create a SafetyLayer with a temporary workspace for testing.
