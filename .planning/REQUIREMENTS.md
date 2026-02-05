@@ -20,9 +20,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TOOL-01**: Agent can execute shell commands scoped to its workspace directory with configurable timeout and output size limits
 - [x] **TOOL-02**: Agent can read files within its workspace
 - [x] **TOOL-03**: Agent can write/create files within its workspace
-- [ ] **TOOL-04**: Agent can fetch web pages via HTTP and receive extracted content
-- [ ] **TOOL-05**: Agent can search the internet via the websearch crate
-- [ ] **TOOL-06**: Agent can pause itself via a sleep/wait tool (timer-based resume, event-based resume, or user-controlled resume)
+- [x] **TOOL-04**: Agent can fetch web pages via HTTP and receive extracted content
+- [x] **TOOL-05**: Agent can search the internet via the websearch crate
+- [x] **TOOL-06**: Agent can pause itself via a sleep/wait tool (timer-based resume, event-based resume, or user-controlled resume)
 
 ### Sub-Agents
 
@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Discovery & Logging
 
-- [ ] **LOG-01**: Agent can flag findings as noteworthy via a discovery tool, with title and description
+- [x] **LOG-01**: Agent can flag findings as noteworthy via a discovery tool, with title and description
 - [x] **LOG-02**: All agent actions, tool calls, and results are written to structured append-only log files
 - [x] **LOG-03**: Sub-agent and background task output is captured in separate log streams
 

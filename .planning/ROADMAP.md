@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
 - [x] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
 - [x] **Phase 5: Sub-Agent Orchestration** - Agent-controlled child LLM sessions and background processes with lifecycle management
-- [ ] **Phase 6: Extended Tools & Discovery** - Web fetching, internet search, sleep/pause, and agent-flagged discovery system
+- [x] **Phase 6: Extended Tools & Discovery** - Web fetching, internet search, sleep/pause, and agent-flagged discovery system
 
 ## Phase Details
 
@@ -121,10 +121,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md -- Dependencies, config schema, web_fetch and web_search modules
-- [ ] 06-02-PLAN.md -- Discovery persistence and sleep state machine modules
-- [ ] 06-03-PLAN.md -- Tool dispatch wiring (13 tools) and system prompt discovery guidance
-- [ ] 06-04-PLAN.md -- Agent loop sleep integration, TUI enhancements, and build verification
+- [x] 06-01-PLAN.md -- Dependencies, config schema, web_fetch and web_search modules
+- [x] 06-02-PLAN.md -- Discovery persistence and sleep state machine modules
+- [x] 06-03-PLAN.md -- Tool dispatch wiring (13 tools) and system prompt discovery guidance
+- [x] 06-04-PLAN.md -- Agent loop sleep integration, TUI enhancements, and build verification
 
 ## Progress
 
@@ -139,4 +139,4 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
 | 4. TUI Dashboard | 5/5 | Complete | 2026-02-05 |
 | 5. Sub-Agent Orchestration | 5/5 | Complete | 2026-02-05 |
-| 6. Extended Tools & Discovery | 0/4 | Not started | - |
+| 6. Extended Tools & Discovery | 4/4 | Complete | 2026-02-05 |
