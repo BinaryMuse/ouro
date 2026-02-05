@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 4 complete. The agent harness now has a full TUI dashboard with real-time event display, keyboard controls, pause/resume, and headless mode fallback. Ready for Phase 5.
+**Current focus:** Phase 5 in progress. Orchestration module foundation complete -- SubAgentManager registry with types, CancellationToken hierarchy, depth/count limits. Ready for sub-agent spawning implementation.
 
 ## Current Position
 
-Phase: 4 of 6 (TUI Dashboard)
-Plan: 5 of 5 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 -- Completed 04-05-PLAN.md (Phase 4 complete)
+Phase: 5 of 6 (Sub-Agent Orchestration)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-02-05 -- Completed 05-01-PLAN.md
 
-Progress: [███████████████████░░] 80%
+Progress: [████████████████████░] 84%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 4 min
-- Total execution time: 59 min
+- Total execution time: 63 min
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [███████████████████░░] 80%
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
 | 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
+| 5. Sub-Agent Orchestration | 1/5 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (3 min), 04-02 (4 min), 04-03 (6 min), 04-04 (4 min), 04-05 (2 min)
+- Last 5 plans: 04-03 (6 min), 04-04 (4 min), 04-05 (2 min), 05-01 (4 min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -98,6 +99,11 @@ Recent decisions affecting current work:
 - 04-05: TUI mode must suppress all stdout/stderr from agent loop (tui_mode flag guards all print calls)
 - 04-05: Tracing subscriber writes to sink in TUI mode to prevent stderr corruption
 - 04-05: Empty model responses guarded with captured_text.is_some() before println
+- 05-01: Arc<Mutex<HashMap>> over DashMap -- negligible contention for <20 agents, avoids extra dependency
+- 05-01: uuid crate version 1.x (plan referenced version "4" which is UUID format version, not crate version)
+- 05-01: tokio-util default features (no sync feature needed) -- CancellationToken in default features
+- 05-01: SubAgentManager is Clone (all fields Arc/Clone) rather than requiring Arc wrapper
+- 05-01: Terminal status states (Completed/Failed/Killed) auto-set completed_at timestamp
 
 ### Pending Todos
 
@@ -109,6 +115,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T00:30:00Z
-Stopped at: Completed 04-05-PLAN.md (Phase 4 complete)
+Last session: 2026-02-05T01:37:04Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
