@@ -26,10 +26,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Sub-Agents
 
-- [ ] **AGENT-01**: Agent can spawn child LLM chat sessions (sub-agents) that run concurrently via Ollama
-- [ ] **AGENT-02**: Agent can spawn background shell processes that run independently
-- [ ] **AGENT-03**: Harness tracks all sub-agents and background processes with status (running, completed, failed)
-- [ ] **AGENT-04**: Harness cleans up sub-agents and background processes on shutdown (no orphan processes)
+- [x] **AGENT-01**: Agent can spawn child LLM chat sessions (sub-agents) that run concurrently via Ollama
+- [x] **AGENT-02**: Agent can spawn background shell processes that run independently
+- [x] **AGENT-03**: Harness tracks all sub-agents and background processes with status (running, completed, failed)
+- [x] **AGENT-04**: Harness cleans up sub-agents and background processes on shutdown (no orphan processes)
 
 ### TUI Dashboard
 
@@ -45,7 +45,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **LOG-01**: Agent can flag findings as noteworthy via a discovery tool, with title and description
 - [x] **LOG-02**: All agent actions, tool calls, and results are written to structured append-only log files
-- [ ] **LOG-03**: Sub-agent and background task output is captured in separate log streams
+- [x] **LOG-03**: Sub-agent and background task output is captured in separate log streams
 
 ### Safety & Guardrails
 
@@ -114,10 +114,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-04 | Phase 6 | Pending |
 | TOOL-05 | Phase 6 | Pending |
 | TOOL-06 | Phase 6 | Pending |
-| AGENT-01 | Phase 5 | Pending |
-| AGENT-02 | Phase 5 | Pending |
-| AGENT-03 | Phase 5 | Pending |
-| AGENT-04 | Phase 5 | Pending |
+| AGENT-01 | Phase 5 | Complete |
+| AGENT-02 | Phase 5 | Complete |
+| AGENT-03 | Phase 5 | Complete |
+| AGENT-04 | Phase 5 | Complete |
 | TUI-01 | Phase 4 | Complete |
 | TUI-02 | Phase 4 | Complete |
 | TUI-03 | Phase 4 | Complete |
@@ -127,7 +127,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TUI-07 | Phase 4 | Complete |
 | LOG-01 | Phase 6 | Pending |
 | LOG-02 | Phase 2 | Complete |
-| LOG-03 | Phase 5 | Pending |
+| LOG-03 | Phase 5 | Complete |
 | SAFE-01 | Phase 1 | Complete |
 | SAFE-02 | Phase 1 | Complete |
 | SAFE-03 | Phase 1 | Complete |
@@ -143,4 +143,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-05 after Phase 4 completion*
+*Last updated: 2026-02-05 after Phase 5 completion*

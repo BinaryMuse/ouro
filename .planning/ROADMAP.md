@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Agent Loop & Basic Tools** - Infinite LLM conversation loop with shell, file, and tool-calling support
 - [x] **Phase 3: Context Management & Resilience** - Token-aware context window management and graceful session restart
 - [x] **Phase 4: TUI Dashboard** - Real-time four-panel terminal interface for monitoring and controlling the agent
-- [ ] **Phase 5: Sub-Agent Orchestration** - Agent-controlled child LLM sessions and background processes with lifecycle management
+- [x] **Phase 5: Sub-Agent Orchestration** - Agent-controlled child LLM sessions and background processes with lifecycle management
 - [ ] **Phase 6: Extended Tools & Discovery** - Web fetching, internet search, sleep/pause, and agent-flagged discovery system
 
 ## Phase Details
@@ -103,11 +103,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 05-01-PLAN.md -- Orchestration types, SubAgentManager registry, and new dependencies
-- [ ] 05-02-PLAN.md -- LLM sub-agent spawner and background process spawner
-- [ ] 05-03-PLAN.md -- Six new agent tools (spawn, status, result, kill, stdin) with dispatch
-- [ ] 05-04-PLAN.md -- Harness wiring (main.rs, runner.rs, agent_loop.rs) and TUI tree panel
-- [ ] 05-05-PLAN.md -- Build verification and human verification of TUI and lifecycle
+- [x] 05-01-PLAN.md -- Orchestration types, SubAgentManager registry, and new dependencies
+- [x] 05-02-PLAN.md -- LLM sub-agent spawner and background process spawner
+- [x] 05-03-PLAN.md -- Six new agent tools (spawn, status, result, kill, stdin) with dispatch
+- [x] 05-04-PLAN.md -- Harness wiring (main.rs, runner.rs, agent_loop.rs) and TUI tree panel
+- [x] 05-05-PLAN.md -- Build verification and human verification of TUI and lifecycle
 
 ### Phase 6: Extended Tools & Discovery
 **Goal**: The agent can fetch web content, search the internet, pause itself, and flag noteworthy findings for the user
@@ -137,5 +137,5 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | 2. Core Agent Loop & Basic Tools | 3/3 | Complete | 2026-02-04 |
 | 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
 | 4. TUI Dashboard | 5/5 | Complete | 2026-02-05 |
-| 5. Sub-Agent Orchestration | 0/5 | Not started | - |
+| 5. Sub-Agent Orchestration | 5/5 | Complete | 2026-02-05 |
 | 6. Extended Tools & Discovery | 0/3 | Not started | - |
