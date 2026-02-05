@@ -18,7 +18,7 @@ use crate::error::AgentError;
 /// workspace and wrapping it with harness-injected context.
 ///
 /// The resulting prompt has this structure:
-/// 1. Harness preamble (role, environment, tools, constraints)
+/// 1. Harness preamble (role, environment, tools, constraints, discoveries guidance)
 /// 2. Session continuity section (if session_number > 1)
 /// 3. Separator
 /// 4. User's system prompt content from `SYSTEM_PROMPT.md`
@@ -81,7 +81,16 @@ You are an autonomous AI agent running in the Ouroboros research harness.
 - File writes are restricted to the workspace directory
 - Shell commands are filtered against a security blocklist
 - Shell commands have a configurable timeout
-- Read access is unrestricted\
+- Read access is unrestricted
+
+## Discoveries
+You can flag noteworthy findings using the flag_discovery tool. A \"discovery\" is anything \
+you judge would be useful to surface to the user -- interesting patterns in data, \
+unexpected results, useful resources found during web searches, insights from exploration, \
+or anything that helps document what you have learned. Use a clear, descriptive title and \
+provide enough context in the description that the user understands the finding without \
+reading the full conversation history. Discoveries persist across session restarts and \
+are visible in the TUI discoveries panel.\
 {session_continuity}
 
 ## Your System Prompt
@@ -125,6 +134,12 @@ mod tests {
         assert!(result.contains("File writes are restricted to the workspace directory"));
         assert!(result.contains("Shell commands are filtered against a security blocklist"));
         assert!(result.contains("Read access is unrestricted"));
+
+        // Discovery guidance present
+        assert!(result.contains("## Discoveries"));
+        assert!(result.contains("flag_discovery"));
+        assert!(result.contains("persist across session restarts"));
+        assert!(result.contains("TUI discoveries panel"));
 
         // User content present
         assert!(result.contains("You are a helpful coding assistant."));
@@ -171,8 +186,17 @@ mod tests {
             .await
             .unwrap();
 
+        // Discovery guidance present before session continuity
+        assert!(result.contains("## Discoveries"));
+        let disc_pos = result.find("## Discoveries").unwrap();
+
         // Session continuity section present
         assert!(result.contains("Session Continuity"));
+        let cont_pos = result.find("Session Continuity").unwrap();
+        assert!(
+            disc_pos < cont_pos,
+            "Discoveries section should appear before Session Continuity"
+        );
         assert!(result.contains("session #3"));
         assert!(result.contains("restarted due to context window limits"));
         assert!(result.contains("SYSTEM_PROMPT.md is reloaded from disk"));
