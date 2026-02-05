@@ -118,12 +118,13 @@ Plans:
   2. The agent can search the internet and receive a list of results with titles, URLs, and snippets
   3. The agent can pause itself with a timer-based, event-based, or user-controlled resume mechanism
   4. The agent can flag a finding as noteworthy (with title and description) and it appears in the discoveries panel
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
+- [ ] 06-01-PLAN.md -- Dependencies, config schema, web_fetch and web_search modules
+- [ ] 06-02-PLAN.md -- Discovery persistence and sleep state machine modules
+- [ ] 06-03-PLAN.md -- Tool dispatch wiring (13 tools) and system prompt discovery guidance
+- [ ] 06-04-PLAN.md -- Agent loop sleep integration, TUI enhancements, and build verification
 
 ## Progress
 
@@ -138,4 +139,4 @@ Note: Phase 4 and Phase 6 depend only on Phase 2, so they could execute after Ph
 | 3. Context Management & Resilience | 3/3 | Complete | 2026-02-04 |
 | 4. TUI Dashboard | 5/5 | Complete | 2026-02-05 |
 | 5. Sub-Agent Orchestration | 5/5 | Complete | 2026-02-05 |
-| 6. Extended Tools & Discovery | 0/3 | Not started | - |
+| 6. Extended Tools & Discovery | 0/4 | Not started | - |
