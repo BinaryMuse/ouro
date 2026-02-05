@@ -108,6 +108,7 @@ fn cli_to_partial(cli: &Cli) -> PartialConfig {
             workspace,
             timeout,
             config: _,
+            ..
         } => PartialConfig {
             model: model.clone(),
             workspace: workspace.clone(),

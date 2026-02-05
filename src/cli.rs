@@ -27,6 +27,10 @@ pub enum Commands {
         /// Path to config file (overrides default search)
         #[arg(short, long)]
         config: Option<PathBuf>,
+
+        /// Run without TUI (headless mode, original behavior)
+        #[arg(long)]
+        headless: bool,
     },
     /// Resume a previous agent session
     Resume {
