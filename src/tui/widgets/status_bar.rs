@@ -21,6 +21,7 @@ fn agent_state_style(state: AgentState) -> Style {
         AgentState::Executing => Color::Cyan,
         AgentState::Idle => Color::DarkGray,
         AgentState::Paused => Color::Red,
+        AgentState::Sleeping => Color::Magenta,
     };
     Style::default().fg(color).add_modifier(Modifier::BOLD)
 }
@@ -44,6 +45,14 @@ pub fn render_status_bar(state: &AppState, area: Rect, buf: &mut Buffer) {
         format!(" {}", state.agent_state),
         agent_state_style(state.agent_state),
     ));
+
+    // Sleep display text (shown when sleeping, next to state indicator)
+    if !state.sleep_display_text.is_empty() {
+        line1_spans.push(Span::styled(
+            format!(" ({})", state.sleep_display_text),
+            Style::default().fg(Color::Magenta),
+        ));
+    }
 
     line1_spans.push(sep.clone());
 
@@ -72,12 +81,12 @@ pub fn render_status_bar(state: &AppState, area: Rect, buf: &mut Buffer) {
     let hint_style = Style::default().fg(Color::DarkGray);
     let key_style = Style::default().fg(Color::White);
 
-    let line2 = Line::from(vec![
+    let mut line2_spans = vec![
         Span::raw(" "),
         Span::styled("Tab", key_style),
         Span::styled(": switch tabs", hint_style),
         Span::styled(" | ", hint_style),
-        Span::styled("\u{2191}\u{2193}", key_style), // "↑↓"
+        Span::styled("\u{2191}\u{2193}", key_style), // "up/down arrows"
         Span::styled(": scroll", hint_style),
         Span::styled(" | ", hint_style),
         Span::styled("p", key_style),
@@ -88,7 +97,16 @@ pub fn render_status_bar(state: &AppState, area: Rect, buf: &mut Buffer) {
         Span::styled(" | ", hint_style),
         Span::styled("q", key_style),
         Span::styled(": quit", hint_style),
-    ]);
+    ];
+
+    // Show resume hint when agent is sleeping
+    if state.agent_state == AgentState::Sleeping {
+        line2_spans.push(Span::styled(" | ", hint_style));
+        line2_spans.push(Span::styled("r", key_style));
+        line2_spans.push(Span::styled(": resume sleep", hint_style));
+    }
+
+    let line2 = Line::from(line2_spans);
 
     let paragraph = Paragraph::new(vec![line1, line2]);
     paragraph.render(area, buf);

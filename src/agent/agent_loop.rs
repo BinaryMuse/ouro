@@ -518,7 +518,7 @@ pub async fn run_agent_session(
 
                 // Dispatch tool call through safety layer and orchestration manager
                 let result =
-                    dispatch_tool_call(call, safety, &config.workspace, Some(&manager), Some(config)).await;
+                    dispatch_tool_call(call, safety, &config.workspace, Some(&manager), Some(config), event_tx.as_ref()).await;
 
                 // Log tool result
                 logger.log_event(&LogEntry::ToolResult {

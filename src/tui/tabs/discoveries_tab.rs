@@ -6,7 +6,7 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
-use ratatui::text::Line;
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Widget};
 
 use crate::tui::app_state::AppState;
@@ -35,14 +35,25 @@ pub fn render_discoveries_tab(state: &AppState, area: Rect, buf: &mut Buffer) {
         return;
     }
 
-    // Build list items in reverse chronological order (most recent first)
+    // Build list items in reverse chronological order (most recent first).
+    // Each discovery renders as two lines: title line + indented description.
     let items: Vec<ListItem<'_>> = state
         .discoveries
         .iter()
         .rev()
-        .map(|(timestamp, content)| {
-            let line = Line::from(format!("[{timestamp}] {content}"));
-            ListItem::new(line)
+        .map(|(timestamp, title, description)| {
+            let title_line = Line::from(vec![
+                Span::styled(
+                    format!("[{timestamp}] "),
+                    Style::default().fg(Color::DarkGray),
+                ),
+                Span::styled(title.clone(), Style::default().fg(Color::Yellow)),
+            ]);
+            let desc_line = Line::from(Span::styled(
+                format!("  {description}"),
+                Style::default().fg(Color::Gray),
+            ));
+            ListItem::new(vec![title_line, desc_line])
         })
         .collect();
 
@@ -75,11 +86,13 @@ mod tests {
         let mut state = AppState::new();
         state.apply_event(AgentEvent::Discovery {
             timestamp: "14:00:00".into(),
-            content: "Found a Makefile".into(),
+            title: "Found a Makefile".into(),
+            description: "Build targets available".into(),
         });
         state.apply_event(AgentEvent::Discovery {
             timestamp: "14:01:00".into(),
-            content: "Found a README".into(),
+            title: "Found a README".into(),
+            description: "Project documentation".into(),
         });
 
         let area = Rect::new(0, 0, 60, 10);
@@ -106,15 +119,18 @@ mod tests {
         let mut state = AppState::new();
         state.apply_event(AgentEvent::Discovery {
             timestamp: "10:00".into(),
-            content: "First discovery".into(),
+            title: "First discovery".into(),
+            description: "Description one".into(),
         });
         state.apply_event(AgentEvent::Discovery {
             timestamp: "11:00".into(),
-            content: "Second discovery".into(),
+            title: "Second discovery".into(),
+            description: "Description two".into(),
         });
         state.apply_event(AgentEvent::Discovery {
             timestamp: "12:00".into(),
-            content: "Third discovery".into(),
+            title: "Third discovery".into(),
+            description: "Description three".into(),
         });
 
         let area = Rect::new(0, 0, 60, 10);

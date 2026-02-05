@@ -168,7 +168,8 @@ mod tests {
         state.active_tab = 1;
         state.apply_event(AgentEvent::Discovery {
             timestamp: "15:00:00".into(),
-            content: "Found important file".into(),
+            title: "Found important file".into(),
+            description: "An important configuration file".into(),
         });
         let content = render_to_string(&state, 80, 24);
         assert!(content.contains("Found important file"));

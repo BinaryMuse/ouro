@@ -87,6 +87,13 @@ pub fn handle_key_event(
             // First press: enter quit confirmation mode.
             state.quit_pending = true;
         }
+        KeyCode::Char('r') => {
+            // Resume a sleeping agent by clearing the pause flag.
+            if state.agent_state == AgentState::Sleeping {
+                pause_flag.store(false, Ordering::SeqCst);
+                let _ = control_tx.send(ControlSignal::Resume);
+            }
+        }
         KeyCode::Char('t') => {
             // Toggle sub-agent panel visibility.
             state.sub_agent_panel_visible = !state.sub_agent_panel_visible;

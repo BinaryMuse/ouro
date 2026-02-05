@@ -57,8 +57,8 @@ pub struct AppState {
     pub log_entries: Vec<LogEntry>,
 
     // -- Discoveries --
-    /// Discovered items: (timestamp, content).
-    pub discoveries: Vec<(String, String)>,
+    /// Discovered items: (timestamp, title, description).
+    pub discoveries: Vec<(String, String, String)>,
 
     // -- Status bar fields --
     /// Current agent state (Thinking/Executing/Idle/Paused).
@@ -92,6 +92,10 @@ pub struct AppState {
     /// Whether the sub-agent tree panel is visible on the Agent tab.
     pub sub_agent_panel_visible: bool,
 
+    // -- Sleep state --
+    /// Human-readable sleep status text shown in the status bar when sleeping.
+    pub sleep_display_text: String,
+
     // -- Quit confirmation --
     /// True after the first 'q' press; a second 'q' confirms quit.
     pub quit_pending: bool,
@@ -115,6 +119,7 @@ impl AppState {
             auto_scroll: true,
             sub_agent_entries: Vec::new(),
             sub_agent_panel_visible: true,
+            sleep_display_text: String::new(),
             quit_pending: false,
         }
     }
@@ -219,8 +224,12 @@ impl AppState {
                 self.auto_scroll_to_bottom();
             }
 
-            AgentEvent::Discovery { timestamp, content } => {
-                self.discoveries.push((timestamp, content));
+            AgentEvent::Discovery {
+                timestamp,
+                title,
+                description,
+            } => {
+                self.discoveries.push((timestamp, title, description));
             }
 
             AgentEvent::CountersUpdated { turn, tool_calls } => {
@@ -429,11 +438,16 @@ mod tests {
         let mut state = AppState::new();
         state.apply_event(AgentEvent::Discovery {
             timestamp: "14:34:00".into(),
-            content: "Found a Makefile in the project root".into(),
+            title: "Found a Makefile".into(),
+            description: "Project root contains a Makefile with build targets".into(),
         });
 
         assert_eq!(state.discoveries.len(), 1);
-        assert_eq!(state.discoveries[0].1, "Found a Makefile in the project root");
+        assert_eq!(state.discoveries[0].1, "Found a Makefile");
+        assert_eq!(
+            state.discoveries[0].2,
+            "Project root contains a Makefile with build targets"
+        );
     }
 
     #[test]
@@ -578,6 +592,7 @@ mod tests {
         assert_eq!(format!("{}", AgentState::Executing), "Executing");
         assert_eq!(format!("{}", AgentState::Idle), "Idle");
         assert_eq!(format!("{}", AgentState::Paused), "Paused");
+        assert_eq!(format!("{}", AgentState::Sleeping), "Sleeping");
     }
 
     #[test]

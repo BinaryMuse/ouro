@@ -65,7 +65,8 @@ pub enum AgentEvent {
     /// Agent flagged something noteworthy for the discoveries list.
     Discovery {
         timestamp: String,
-        content: String,
+        title: String,
+        description: String,
     },
 
     /// Turn and tool-call counters updated (emitted each turn).
@@ -86,7 +87,7 @@ pub enum AgentEvent {
     },
 }
 
-/// The four visible agent states shown in the status bar.
+/// The five visible agent states shown in the status bar.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum AgentState {
     /// Model is generating a response (streaming tokens).
@@ -98,6 +99,8 @@ pub enum AgentState {
     Idle,
     /// User has paused the agent loop.
     Paused,
+    /// Agent is sleeping (self-initiated pause via sleep tool).
+    Sleeping,
 }
 
 impl fmt::Display for AgentState {
@@ -107,6 +110,7 @@ impl fmt::Display for AgentState {
             AgentState::Executing => write!(f, "Executing"),
             AgentState::Idle => write!(f, "Idle"),
             AgentState::Paused => write!(f, "Paused"),
+            AgentState::Sleeping => write!(f, "Sleeping"),
         }
     }
 }
