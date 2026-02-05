@@ -12,23 +12,23 @@ A local AI agent can autonomously explore, build its own tools, develop its own 
 
 ### Validated
 
-(None yet — ship to validate)
+- Harness runs an infinite agent loop against a configurable local Ollama model via genai crate — v1.0
+- Agent has a workspace directory it fully owns and can organize however it wants — v1.0
+- Agent can execute shell commands scoped to its workspace (no sudo, destructive command blocking) — v1.0
+- Agent can read/write files within its workspace — v1.0
+- Agent can fetch web documents and search the internet — v1.0
+- Agent can spawn sub-agents (both additional LLM chat sessions and background shell processes) — v1.0
+- Agent can pause itself via a sleep/wait tool (timer-based, event-based, or user-controlled resume) — v1.0
+- Harness loads SYSTEM_PROMPT.md from the workspace as the system prompt on each agent restart — v1.0
+- When context window fills, harness restarts the agent session with SYSTEM_PROMPT.md — agent must bootstrap its own persistence — v1.0
+- Ratatui TUI displays: main agent log, sub-agent/task tree, flagged discoveries panel, high-level progress — v1.0
+- TUI allows user to pause/resume the agent loop, inspect state, and debug — v1.0
+- Well-formatted structured logs for the main loop and all background tasks — v1.0
+- Basic guardrails: workspace-scoped execution, no sudo, destructive command blocking — v1.0
 
 ### Active
 
-- [ ] Harness runs an infinite agent loop against a configurable local Ollama model via genai crate
-- [ ] Agent has a workspace directory it fully owns and can organize however it wants
-- [ ] Agent can execute shell commands scoped to its workspace (no sudo, destructive command blocking)
-- [ ] Agent can read/write files within its workspace
-- [ ] Agent can fetch web documents and search the internet
-- [ ] Agent can spawn sub-agents (both additional LLM chat sessions and background shell processes)
-- [ ] Agent can pause itself via a sleep/wait tool (timer-based, event-based, or user-controlled resume)
-- [ ] Harness loads SYSTEM_PROMPT.md from the workspace as the system prompt on each agent restart
-- [ ] When context window fills, harness restarts the agent session with SYSTEM_PROMPT.md — agent must bootstrap its own persistence
-- [ ] Ratatui TUI displays: main agent log, sub-agent/task tree, flagged discoveries panel, high-level progress
-- [ ] TUI allows user to pause/resume the agent loop, inspect state, and debug
-- [ ] Well-formatted structured logs for the main loop and all background tasks
-- [ ] Basic guardrails: workspace-scoped execution, no sudo, rate limiting on web requests, destructive command blocking
+(None — v1.0 shipped. See /gsd:new-milestone for next iteration.)
 
 ### Out of Scope
 
@@ -48,6 +48,21 @@ The genai crate is preferred as the LLM driver — the user contributes to this 
 
 The monitoring TUI should surface what matters: what the agent is doing (log), what's running in the background (sub-agent tree), and what the agent thinks is interesting (discoveries panel). The user wants to observe the experiment, not babysit it.
 
+## Current State (v1.0 Shipped)
+
+**Version:** v1.0 Initial Release (2026-02-05)
+**Codebase:** 11,617 lines of Rust across 124 files
+**Tech stack:** Rust, genai (Ollama), ratatui, tokio, reqwest, htmd, scraper
+
+**Capabilities:**
+- Infinite agent loop with streaming LLM responses
+- 13 tools: shell, file read/write, web fetch, web search, sleep, discovery, sub-agent management
+- Context management with observation masking and automatic session restart
+- Four-panel TUI dashboard with real-time updates
+- Sub-agent orchestration with hierarchical lifecycle management
+
+**Next:** Run the agent and observe autonomous exploration patterns
+
 ## Constraints
 
 - **Runtime**: Rust — performance, safety, suitable for long-running daemon processes
@@ -61,11 +76,14 @@ The monitoring TUI should surface what matters: what the agent is doing (log), w
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Full shell access (not container) for v1 | Simplicity; container adds build complexity. Guardrails via workspace scoping and command filtering | — Pending |
-| Agent bootstraps its own persistence | Core experiment: see if the agent can design its own memory. Harness only guarantees SYSTEM_PROMPT.md loading | — Pending |
-| Single workspace directory (no imposed structure) | Minimize scaffolding; see what organizational patterns the agent develops on its own | — Pending |
-| genai crate for LLM communication | User contributes to the project; ensures tight integration and ability to fix issues | — Pending |
-| Timer + events + user-controlled pause | Maximum flexibility for the agent (timer/events) and the human (manual override) | — Pending |
+| Full shell access (not container) for v1 | Simplicity; container adds build complexity. Guardrails via workspace scoping and command filtering | Good |
+| Agent bootstraps its own persistence | Core experiment: see if the agent can design its own memory. Harness only guarantees SYSTEM_PROMPT.md loading | Good |
+| Single workspace directory (no imposed structure) | Minimize scaffolding; see what organizational patterns the agent develops on its own | Good |
+| genai crate for LLM communication | User contributes to the project; ensures tight integration and ability to fix issues | Good |
+| Timer + events + user-controlled pause | Maximum flexibility for the agent (timer/events) and the human (manual override) | Good |
+| Two-phase Ctrl+C shutdown | First signal graceful (finish current turn), second signal force-exit | Good |
+| Session-based architecture | Outer restart loop in main.rs, inner turn loop in run_agent_session | Good |
+| Sub-agent CancellationToken hierarchy | Clean cascading shutdown without orphan processes | Good |
 
 ---
-*Last updated: 2026-02-03 after initialization*
+*Last updated: 2026-02-05 after v1.0 milestone*
