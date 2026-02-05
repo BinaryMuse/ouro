@@ -119,6 +119,9 @@ Recent decisions affecting current work:
 - 05-04: All tree nodes open by default in TUI (full hierarchy visible without interaction)
 - 05-05: Clippy warnings treated as build failures via `clippy -- -D warnings` for code quality enforcement
 - 05-05: Human verification checkpoint used to confirm visual/functional correctness beyond automated tests
+- 06-01: Mutex<Option<Instant>> static for rate limiting -- lock held briefly, sleep outside lock
+- 06-01: DDG lite scraping with CSS selectors (a.result-link, td.result-snippet)
+- 06-01: brave_api_key uses Option<Option<String>> in PartialConfig for merge layering
 - 06-02: Discovery JSONL at workspace/.ouro-discoveries.jsonl with lenient reader (skips corrupt lines)
 - 06-02: SleepState uses std::time::Instant for elapsed tracking (monotonic, no async dependency)
 - 06-02: parse_sleep_args clamps duration to config max_sleep_duration_secs
@@ -134,6 +137,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T03:25:17Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-02-05T03:27:23Z
+Stopped at: Completed 06-01-PLAN.md (summary created)
 Resume file: None
