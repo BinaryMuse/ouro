@@ -233,6 +233,11 @@ pub async fn run_agent_session(
         }
     };
 
+    // When a TUI event channel is provided, suppress all direct stdout/stderr output
+    // because the TUI owns the terminal (alternate screen + raw mode). All information
+    // reaches the user through AgentEvent messages instead.
+    let tui_mode = event_tx.is_some();
+
     // -- Startup: validate Ollama and model
     check_ollama_ready(&config.model).await?;
 
@@ -267,10 +272,12 @@ pub async fn run_agent_session(
         for msg in carryover_messages {
             chat_req = chat_req.append_message(msg.clone());
         }
-        eprintln!(
-            "[context] Loaded {} carryover messages from previous session",
-            carryover_messages.len()
-        );
+        if !tui_mode {
+            eprintln!(
+                "[context] Loaded {} carryover messages from previous session",
+                carryover_messages.len()
+            );
+        }
     }
 
     // -- Inject restart marker if this is a restarted session
@@ -295,12 +302,14 @@ pub async fn run_agent_session(
     logger.log_session_start(&config.model, &config.workspace)?;
 
     // -- Print startup info to stderr (not stdout, which is for model output)
-    eprintln!(
-        "Ouroboros agent started (session #{session_number}).\n  Model: {}\n  Workspace: {}\n  Log: {}",
-        config.model,
-        config.workspace.display(),
-        logger.log_path().display(),
-    );
+    if !tui_mode {
+        eprintln!(
+            "Ouroboros agent started (session #{session_number}).\n  Model: {}\n  Workspace: {}\n  Log: {}",
+            config.model,
+            config.workspace.display(),
+            logger.log_path().display(),
+        );
+    }
 
     // -- Main loop state
     let mut turn: u64 = 0;
@@ -344,7 +353,9 @@ pub async fn run_agent_session(
             Ok(res) => res,
             Err(e) => {
                 let msg = format!("LLM stream error: {e}");
-                eprintln!("[error] {msg}");
+                if !tui_mode {
+                    eprintln!("[error] {msg}");
+                }
                 send_event(AgentEvent::Error {
                     timestamp: now_iso_timestamp(),
                     turn,
@@ -371,9 +382,11 @@ pub async fn run_agent_session(
         while let Some(event) = stream.next().await {
             match event {
                 Ok(ChatStreamEvent::Chunk(chunk)) => {
-                    // Print text to stdout in real time.
-                    print!("{}", chunk.content);
-                    std::io::stdout().flush().ok();
+                    // Print text to stdout in real time (headless only).
+                    if !tui_mode {
+                        print!("{}", chunk.content);
+                        std::io::stdout().flush().ok();
+                    }
                 }
                 Ok(ChatStreamEvent::End(end)) => {
                     // Extract captured text content.
@@ -417,7 +430,9 @@ pub async fn run_agent_session(
                     // Start, ReasoningChunk, ThoughtSignatureChunk, ToolCallChunk -- ignore.
                 }
                 Err(e) => {
-                    eprintln!("\n[stream error] {e}");
+                    if !tui_mode {
+                        eprintln!("\n[stream error] {e}");
+                    }
                     // Continue -- the End event may still arrive.
                 }
             }
@@ -441,14 +456,18 @@ pub async fn run_agent_session(
 
         if captured_tool_calls.is_empty() {
             // -- Text-only response (thinking out loud): append and re-prompt
-            println!(); // newline after streamed text
+            if !tui_mode && captured_text.is_some() {
+                println!(); // newline after streamed text
+            }
             if let Some(text) = captured_text {
                 chat_req = chat_req.append_message(ChatMessage::assistant(text));
             }
             // Continue to next iteration (re-prompt).
         } else {
             // -- Tool calls: dispatch each one
-            println!(); // newline after any streamed text
+            if !tui_mode {
+                println!(); // newline after any streamed text
+            }
 
             // Append the assistant message with tool calls to the conversation.
             // Convert captured tool calls into a proper assistant message.
@@ -476,7 +495,9 @@ pub async fn run_agent_session(
                 } else {
                     args_summary.clone()
                 };
-                eprintln!("[tool] {}({})", call.fn_name, args_display);
+                if !tui_mode {
+                    eprintln!("[tool] {}({})", call.fn_name, args_display);
+                }
 
                 // Emit Executing state and ToolCallStarted event for TUI.
                 send_event(AgentEvent::StateChanged(AgentState::Executing));
@@ -511,7 +532,9 @@ pub async fn run_agent_session(
                 } else {
                     result.clone()
                 };
-                eprintln!("[result] {result_display}");
+                if !tui_mode {
+                    eprintln!("[result] {result_display}");
+                }
 
                 // Emit ToolCallCompleted event for TUI.
                 send_event(AgentEvent::ToolCallCompleted {
@@ -573,12 +596,14 @@ pub async fn run_agent_session(
                 chat_req = chat_req
                     .append_message(ChatMessage::system(&notification));
 
-                eprintln!(
-                    "[context] Masked {} observations ({} total), ~{:.0}% reclaimed",
-                    mask_result.masked_count,
-                    mask_result.total_masked,
-                    reclaimed_pct.max(0.0),
-                );
+                if !tui_mode {
+                    eprintln!(
+                        "[context] Masked {} observations ({} total), ~{:.0}% reclaimed",
+                        mask_result.masked_count,
+                        mask_result.total_masked,
+                        reclaimed_pct.max(0.0),
+                    );
+                }
             }
             ContextAction::WindDown => {
                 // Inject wind-down message -- let the agent have one more turn.
@@ -593,7 +618,9 @@ pub async fn run_agent_session(
                     timestamp: now_iso_timestamp(),
                     content: msg,
                 })?;
-                eprintln!("[context] Wind-down message sent");
+                if !tui_mode {
+                    eprintln!("[context] Wind-down message sent");
+                }
             }
             ContextAction::Restart => {
                 // Extract carryover messages for the next session.
@@ -613,10 +640,12 @@ pub async fn run_agent_session(
                 })?;
                 logger.log_session_end(turn, "context_full_restart")?;
 
-                eprintln!(
-                    "[context] Session #{session_number} restarting. {turn} turns, {} carryover messages.",
-                    carryover.len()
-                );
+                if !tui_mode {
+                    eprintln!(
+                        "[context] Session #{session_number} restarting. {turn} turns, {} carryover messages.",
+                        carryover.len()
+                    );
+                }
 
                 return Ok(SessionResult {
                     shutdown_reason: ShutdownReason::ContextFull {
@@ -632,10 +661,12 @@ pub async fn run_agent_session(
     // -- Log session end (normal shutdown)
     logger.log_session_end(turn, shutdown_reason)?;
 
-    eprintln!(
-        "Session ended: {shutdown_reason}. {turn} turns completed. Log: {}",
-        logger.log_path().display(),
-    );
+    if !tui_mode {
+        eprintln!(
+            "Session ended: {shutdown_reason}. {turn} turns completed. Log: {}",
+            logger.log_path().display(),
+        );
+    }
 
     Ok(SessionResult {
         shutdown_reason: ShutdownReason::UserShutdown,

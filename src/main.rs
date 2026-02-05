@@ -17,15 +17,29 @@ use safety::SafetyLayer;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize tracing
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::from_default_env()
-                .add_directive(tracing::Level::INFO.into()),
-        )
-        .init();
-
     let cli = cli::Cli::parse();
+
+    // Determine if we're in TUI mode (TUI owns the terminal, so suppress stderr tracing).
+    let is_tui_mode = matches!(&cli.command, cli::Commands::Run { headless, .. } if !headless);
+
+    // Initialize tracing -- suppress stderr in TUI mode to avoid corrupting the terminal.
+    if is_tui_mode {
+        // In TUI mode, only log if RUST_LOG is explicitly set (developer debugging).
+        tracing_subscriber::fmt()
+            .with_env_filter(
+                tracing_subscriber::EnvFilter::from_env("RUST_LOG"),
+            )
+            .with_writer(std::io::sink)
+            .init();
+    } else {
+        tracing_subscriber::fmt()
+            .with_env_filter(
+                tracing_subscriber::EnvFilter::from_default_env()
+                    .add_directive(tracing::Level::INFO.into()),
+            )
+            .init();
+    }
+
     tracing::info!("Ouroboros starting");
 
     let config = config::load_config(&cli)?;
