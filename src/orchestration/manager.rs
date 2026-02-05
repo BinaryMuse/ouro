@@ -343,6 +343,42 @@ impl SubAgentManager {
         entries.get_mut(id).and_then(|e| e.stdin_handle.take())
     }
 
+    /// Write data to a background process's stdin without consuming the handle.
+    ///
+    /// Temporarily takes the `ChildStdin` handle, writes the data, and puts
+    /// the handle back. This allows multiple writes to the same process.
+    ///
+    /// Returns the number of bytes written on success, or an error string.
+    pub async fn write_to_stdin(&self, id: &SubAgentId, data: &[u8]) -> Result<usize, String> {
+        // Take the stdin handle out of the entry (requires brief lock).
+        let stdin_opt = {
+            let mut entries = self.entries.lock().unwrap();
+            entries.get_mut(id).and_then(|e| e.stdin_handle.take())
+        };
+
+        let mut stdin = stdin_opt.ok_or_else(|| {
+            "No stdin handle available (process not found or stdin already closed)".to_string()
+        })?;
+
+        // Write data outside the lock to avoid holding it during async I/O.
+        use tokio::io::AsyncWriteExt;
+        let write_result = stdin.write_all(data).await;
+
+        // Put the handle back regardless of write outcome.
+        {
+            let mut entries = self.entries.lock().unwrap();
+            if let Some(entry) = entries.get_mut(id) {
+                entry.stdin_handle = Some(stdin);
+            }
+            // If the entry was removed while we were writing, the handle is dropped.
+        }
+
+        match write_result {
+            Ok(()) => Ok(data.len()),
+            Err(e) => Err(format!("Failed to write to stdin: {e}")),
+        }
+    }
+
     /// Read the last N lines from a background process's output buffer.
     ///
     /// Returns `None` if the entry is not found or has no output buffer.

@@ -265,7 +265,7 @@ pub async fn run_agent_session(
     let client = Client::default();
 
     // -- Build initial chat request with system prompt and tools
-    let mut chat_req = ChatRequest::from_system(&system_prompt).with_tools(define_tools());
+    let mut chat_req = ChatRequest::from_system(&system_prompt).with_tools(define_tools(None));
 
     // -- Add carryover messages from previous session
     if !carryover_messages.is_empty() {
@@ -514,7 +514,7 @@ pub async fn run_agent_session(
 
                 // Dispatch tool call through safety layer
                 let result =
-                    dispatch_tool_call(call, safety, &config.workspace).await;
+                    dispatch_tool_call(call, safety, &config.workspace, None, None).await;
 
                 // Log tool result
                 logger.log_event(&LogEntry::ToolResult {

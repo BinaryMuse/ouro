@@ -3,6 +3,7 @@ mod cli;
 mod config;
 mod error;
 mod exec;
+mod orchestration;
 mod safety;
 mod tui;
 
