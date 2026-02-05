@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 5 in progress. Tool dispatch wiring complete -- all 9 tools (3 core + 6 sub-agent) have schemas, dispatch routing, and system prompt descriptions. Ready for TUI integration.
+**Current focus:** Phase 5 nearing completion. SubAgentManager fully integrated into harness lifecycle -- wired from main.rs through agent_loop to tool dispatch, TUI tree widget live. One plan remaining (05-05 verification).
 
 ## Current Position
 
 Phase: 5 of 6 (Sub-Agent Orchestration)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-05 -- Completed 05-03-PLAN.md
+Last activity: 2026-02-05 -- Completed 05-04-PLAN.md
 
-Progress: [██████████████████████░] 90%
+Progress: [███████████████████████░] 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: 4 min
-- Total execution time: 76 min
+- Total execution time: 82 min
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [██████████████████████░
 | 2. Core Agent Loop | 3/3 | 12 min | 4.0 min |
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
 | 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
-| 5. Sub-Agent Orchestration | 3/5 | 17 min | 5.7 min |
+| 5. Sub-Agent Orchestration | 4/5 | 23 min | 5.8 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-05 (2 min), 05-01 (4 min), 05-02 (4 min), 05-03 (9 min)
-- Trend: Slight increase on 05-03 due to async type cycle resolution
+- Last 5 plans: 05-01 (4 min), 05-02 (4 min), 05-03 (9 min), 05-04 (6 min)
+- Trend: Stable at ~6 min for integration plans
 
 *Updated after each plan completion*
 
@@ -113,6 +113,9 @@ Recent decisions affecting current work:
 - 05-03: write_to_stdin takes-writes-puts-back ChildStdin handle (non-consuming, enables multiple writes)
 - 05-03: define_tools accepts Option<&[String]> filter for sub-agent tool customization
 - 05-03: dispatch_tool_call takes Option parameters for manager/config -- returns error JSON when None
+- 05-04: SubAgentManager created with event_tx=None in main.rs; TUI reads state via list_all() each render tick
+- 05-04: Render-tick polling (50ms) over event-driven approach for sub-agent state (simpler, fast enough)
+- 05-04: All tree nodes open by default in TUI (full hierarchy visible without interaction)
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T01:56:24Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-02-05T02:05:39Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None
