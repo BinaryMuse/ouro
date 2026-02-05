@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 /// Errors related to configuration loading and parsing.
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code, clippy::enum_variant_names)]
 pub enum ConfigError {
     #[error("I/O error: {0}")]
     IoError(#[from] std::io::Error),
@@ -15,6 +16,7 @@ pub enum ConfigError {
 
 /// Errors related to safety guardrails (command filtering, workspace enforcement).
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum GuardrailError {
     #[error("Command blocked: `{command}` - {reason}")]
     CommandBlocked { command: String, reason: String },
@@ -25,6 +27,7 @@ pub enum GuardrailError {
 
 /// Errors related to shell command execution.
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum ExecError {
     #[error("Failed to spawn shell process: {0}")]
     SpawnFailed(String),
@@ -41,6 +44,7 @@ pub enum ExecError {
 
 /// Errors related to the agent loop and its subsystems.
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum AgentError {
     #[error("Ollama not reachable at {url}: {message}")]
     OllamaUnavailable { url: String, message: String },

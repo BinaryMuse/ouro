@@ -18,6 +18,7 @@ impl WorkspaceGuard {
 
     /// Check if a write to the given path is allowed.
     /// Resolves symlinks to prevent escape via symlink traversal.
+    #[allow(dead_code)]
     pub fn is_write_allowed(&self, target: &Path) -> Result<bool, std::io::Error> {
         let canonical = if target.exists() {
             std::fs::canonicalize(target)?

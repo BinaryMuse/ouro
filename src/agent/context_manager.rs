@@ -55,6 +55,7 @@ pub struct MaskResult {
 
 /// Tracks token usage, evaluates context pressure thresholds, and drives
 /// observation masking decisions.
+#[allow(dead_code)]
 pub struct ContextManager {
     /// Model's context window size in tokens.
     context_limit: usize,
@@ -80,6 +81,7 @@ pub struct ContextManager {
     wind_down_sent: bool,
 }
 
+#[allow(dead_code)]
 impl ContextManager {
     /// Create a new ContextManager with the given thresholds.
     ///
@@ -292,7 +294,7 @@ pub fn is_already_masked(content: &str) -> bool {
 /// IMPORTANT: Messages are never removed -- only their content is replaced.
 /// This preserves the tool call/response chain that providers expect.
 pub fn mask_oldest_observations(
-    messages: &mut Vec<ChatMessage>,
+    messages: &mut [ChatMessage],
     count: usize,
     context_manager: &mut ContextManager,
 ) -> MaskResult {
@@ -317,10 +319,10 @@ pub fn mask_oldest_observations(
             } else {
                 // Fallback: check if it's a text-content tool message (unlikely
                 // but defensively handle it).
-                if let Some(text) = msg.content.first_text() {
-                    if is_already_masked(text) {
-                        return None;
-                    }
+                if let Some(text) = msg.content.first_text()
+                    && is_already_masked(text)
+                {
+                    return None;
                 }
                 Some((i, String::new()))
             }

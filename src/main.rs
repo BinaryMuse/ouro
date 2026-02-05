@@ -110,13 +110,13 @@ async fn main() -> anyhow::Result<()> {
                             carryover_messages: carry,
                         } => {
                             // Check max_restarts
-                            if let Some(max) = config.max_restarts {
-                                if session_number >= max {
-                                    eprintln!(
-                                        "Max restarts ({max}) reached. Exiting."
-                                    );
-                                    break;
-                                }
+                            if let Some(max) = config.max_restarts
+                                && session_number >= max
+                            {
+                                eprintln!(
+                                    "Max restarts ({max}) reached. Exiting."
+                                );
+                                break;
                             }
 
                             // Check auto_restart

@@ -55,6 +55,7 @@ pub enum ShutdownReason {
 }
 
 /// Result of a single agent session.
+#[allow(dead_code)]
 pub struct SessionResult {
     /// Why this session ended.
     pub shutdown_reason: ShutdownReason,
@@ -215,6 +216,7 @@ fn extract_carryover(messages: &[ChatMessage], n_turns: usize) -> Vec<ChatMessag
 ///   sent for real-time TUI rendering. When `None`, headless mode (no events).
 /// * `pause_flag` - Optional pause control. When `Some(true)`, the loop blocks
 ///   between turns until unpaused. When `None`, pause is never checked.
+#[allow(clippy::too_many_arguments)]
 pub async fn run_agent_session(
     config: &AppConfig,
     safety: &SafetyLayer,
@@ -326,20 +328,20 @@ pub async fn run_agent_session(
         }
 
         // Check pause flag between turns (let current tool finish, pause before next LLM call).
-        if let Some(ref pf) = pause_flag {
-            if pf.load(Ordering::SeqCst) {
-                send_event(AgentEvent::StateChanged(AgentState::Paused));
-                // Spin-wait with small sleep until unpaused or shutdown.
-                while pf.load(Ordering::SeqCst) && !shutdown.load(Ordering::SeqCst) {
-                    tokio::time::sleep(Duration::from_millis(100)).await;
-                }
-                if shutdown.load(Ordering::SeqCst) {
-                    // User quit while paused.
-                    shutdown_reason = "user_shutdown";
-                    break;
-                }
-                send_event(AgentEvent::StateChanged(AgentState::Idle));
+        if let Some(ref pf) = pause_flag
+            && pf.load(Ordering::SeqCst)
+        {
+            send_event(AgentEvent::StateChanged(AgentState::Paused));
+            // Spin-wait with small sleep until unpaused or shutdown.
+            while pf.load(Ordering::SeqCst) && !shutdown.load(Ordering::SeqCst) {
+                tokio::time::sleep(Duration::from_millis(100)).await;
             }
+            if shutdown.load(Ordering::SeqCst) {
+                // User quit while paused.
+                shutdown_reason = "user_shutdown";
+                break;
+            }
+            send_event(AgentEvent::StateChanged(AgentState::Idle));
         }
 
         turn += 1;

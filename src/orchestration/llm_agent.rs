@@ -47,6 +47,7 @@ use crate::safety::SafetyLayer;
 /// # Returns
 ///
 /// The new sub-agent's ID on success, or an error string if limits are exceeded.
+#[allow(clippy::too_many_arguments)]
 pub async fn spawn_llm_sub_agent(
     manager: &SubAgentManager,
     goal: String,

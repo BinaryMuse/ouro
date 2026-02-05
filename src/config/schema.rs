@@ -74,6 +74,7 @@ pub struct PartialConfig {
 
 impl ConfigFile {
     /// Convert a parsed TOML config file into a PartialConfig for merging.
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_partial(self) -> PartialConfig {
         let mut partial = PartialConfig::default();
 

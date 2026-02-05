@@ -42,6 +42,7 @@ impl CommandFilter {
     /// This is a convenience constructor covering privilege escalation,
     /// destructive root operations, system directory writes, disk operations,
     /// fork bombs, system control, and root permission changes.
+    #[allow(dead_code)]
     pub fn from_defaults() -> Result<Self, regex::Error> {
         Self::new(&default_blocklist())
     }

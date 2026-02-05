@@ -405,11 +405,11 @@ async fn dispatch_file_write(
     let ws_root = safety.workspace_root();
 
     // Ensure parent directories exist so we can canonicalize.
-    if let Some(parent) = full_path.parent() {
-        if let Err(e) = tokio::fs::create_dir_all(parent).await {
-            return json!({"error": format!("file_write: failed to create directories: {}", e)})
-                .to_string();
-        }
+    if let Some(parent) = full_path.parent()
+        && let Err(e) = tokio::fs::create_dir_all(parent).await
+    {
+        return json!({"error": format!("file_write: failed to create directories: {}", e)})
+            .to_string();
     }
 
     // Canonicalize the parent to resolve symlinks and check containment.
@@ -471,21 +471,21 @@ macro_rules! require_manager {
     };
 }
 
+/// Parsed arguments for spawn_llm_session: (goal, model, context, timeout, tool_filter).
+type SpawnLlmArgs = (
+    String,
+    Option<String>,
+    HashMap<String, String>,
+    Option<Duration>,
+    Option<Vec<String>>,
+);
+
 /// Extract spawn_llm_session arguments from a tool call.
 ///
 /// Returns `(goal, model, context, timeout, tool_filter)` or an error string.
 fn extract_spawn_llm_args(
     call: &genai::chat::ToolCall,
-) -> Result<
-    (
-        String,
-        Option<String>,
-        HashMap<String, String>,
-        Option<Duration>,
-        Option<Vec<String>>,
-    ),
-    String,
-> {
+) -> Result<SpawnLlmArgs, String> {
     let goal = call
         .fn_arguments
         .get("goal")

@@ -95,10 +95,10 @@ pub async fn run_tui(
                         carryover_messages: carry,
                     } => {
                         // Check max_restarts.
-                        if let Some(max) = config_clone.max_restarts {
-                            if session_number >= max {
-                                break;
-                            }
+                        if let Some(max) = config_clone.max_restarts
+                            && session_number >= max
+                        {
+                            break;
                         }
                         if shutdown_clone.load(Ordering::SeqCst) {
                             break;

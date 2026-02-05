@@ -11,6 +11,7 @@ use super::event::{AgentEvent, AgentState};
 
 /// Categorizes log entries for color-coding and icon selection during rendering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum LogEntryKind {
     /// Agent thinking/reasoning text.
     Thought,

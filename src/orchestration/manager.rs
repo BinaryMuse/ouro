@@ -62,6 +62,7 @@ pub struct SubAgentManager {
     max_total: usize,
 }
 
+#[allow(dead_code)]
 impl SubAgentManager {
     /// Create a new manager with the given cancellation root and limits.
     ///
