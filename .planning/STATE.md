@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 6 in progress. All 13 tools wired with schemas, dispatch, and descriptions. Discovery guidance in system prompt. Agent loop integration (plan 06-04) remains.
+**Current focus:** Phase 6 complete. All 25 plans executed. The harness is feature-complete for v1: safety, agent loop, context management, TUI dashboard, sub-agent orchestration, web tools, discovery, and sleep.
 
 ## Current Position
 
 Phase: 6 of 6 (Extended Tools & Discovery)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-05 -- Completed 06-03-PLAN.md
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 -- Completed 06-04-PLAN.md
 
-Progress: [██████████████████████░░] 92% (23/25 plans)
+Progress: [████████████████████████] 100% (25/25 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
-- Average duration: 4.5 min
-- Total execution time: 103 min
+- Total plans completed: 25
+- Average duration: 4.4 min
+- Total execution time: 110 min
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [██████████████████████░
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
 | 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
 | 5. Sub-Agent Orchestration | 5/5 | 26 min | 5.2 min |
-| 6. Extended Tools & Discovery | 3/4 | 18 min | 6.0 min |
+| 6. Extended Tools & Discovery | 4/4 | 25 min | 6.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-05 (3 min), 06-01 (3 min), 06-02 (3 min), 06-03 (12 min)
-- Trend: 06-03 took longer due to parallel plan 06-04 merge conflict resolution
+- Last 5 plans: 06-01 (3 min), 06-02 (3 min), 06-03 (12 min), 06-04 (7 min)
+- Trend: Phase 6 complete. 06-03 and 06-04 ran in parallel requiring cross-plan merge coordination.
 
 *Updated after each plan completion*
 
@@ -130,6 +130,9 @@ Recent decisions affecting current work:
 - 06-03: web_search defaults to duckduckgo; wildcard match arm catches all unknown providers
 - 06-03: event_tx as Option<&UnboundedSender<AgentEvent>> enables TUI event emission from tool dispatch
 - 06-03: Discovery guidance in system prompt placed after Constraints, before Session Continuity
+- 06-04: Manual sleep mode reuses existing pause_flag -- r key clears flag, sleep loop detects as wake
+- 06-04: Sleep state machine runs between turns (after tool dispatch, before context evaluation)
+- 06-04: Wake notification injected as ChatMessage::system with reason and elapsed time
 
 ### Pending Todos
 
@@ -137,10 +140,10 @@ None.
 
 ### Blockers/Concerns
 
-None.
+None. Project is feature-complete for v1.
 
 ## Session Continuity
 
-Last session: 2026-02-05T03:37:36Z
-Stopped at: Completed 06-03-PLAN.md (summary created)
+Last session: 2026-02-05T03:38:02Z
+Stopped at: Completed 06-04-PLAN.md -- Phase 6 complete, all 25 plans done
 Resume file: None
