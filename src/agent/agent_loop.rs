@@ -34,6 +34,7 @@ use crate::agent::system_prompt::build_system_prompt;
 use crate::agent::tools::{define_tools, dispatch_tool_call, tool_descriptions};
 use crate::config::AppConfig;
 use crate::error::AgentError;
+use crate::orchestration::manager::SubAgentManager;
 use crate::safety::SafetyLayer;
 use crate::tui::event::{AgentEvent, AgentState};
 
@@ -222,6 +223,7 @@ pub async fn run_agent_session(
     shutdown: Arc<AtomicBool>,
     event_tx: Option<tokio::sync::mpsc::UnboundedSender<AgentEvent>>,
     pause_flag: Option<Arc<AtomicBool>>,
+    manager: SubAgentManager,
 ) -> anyhow::Result<SessionResult> {
     // -- Helper: send event if TUI channel exists, ignore send errors (TUI may have closed)
     let send_event = {
@@ -512,9 +514,9 @@ pub async fn run_agent_session(
                 // Track tool call count
                 tool_call_count += 1;
 
-                // Dispatch tool call through safety layer
+                // Dispatch tool call through safety layer and orchestration manager
                 let result =
-                    dispatch_tool_call(call, safety, &config.workspace, None, None).await;
+                    dispatch_tool_call(call, safety, &config.workspace, Some(&manager), Some(config)).await;
 
                 // Log tool result
                 logger.log_event(&LogEntry::ToolResult {

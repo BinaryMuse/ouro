@@ -5,6 +5,8 @@
 //! entries and updates counters/status fields. Each render frame reads from
 //! `AppState` to produce the UI (immediate-mode rendering).
 
+use crate::orchestration::types::SubAgentInfo;
+
 use super::event::{AgentEvent, AgentState};
 
 /// Categorizes log entries for color-coding and icon selection during rendering.
@@ -81,6 +83,10 @@ pub struct AppState {
     /// When true, new log entries auto-scroll the view to the bottom.
     pub auto_scroll: bool,
 
+    // -- Sub-agent state --
+    /// Snapshot of all sub-agent/process entries, refreshed each render tick.
+    pub sub_agent_entries: Vec<SubAgentInfo>,
+
     // -- Panel visibility --
     /// Whether the sub-agent tree panel is visible on the Agent tab.
     pub sub_agent_panel_visible: bool,
@@ -106,6 +112,7 @@ impl AppState {
             active_tab: 0,
             log_scroll_offset: 0,
             auto_scroll: true,
+            sub_agent_entries: Vec::new(),
             sub_agent_panel_visible: true,
             quit_pending: false,
         }

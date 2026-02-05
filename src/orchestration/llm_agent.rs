@@ -201,6 +201,7 @@ pub async fn spawn_llm_sub_agent(
             shutdown_flag,
             None, // no TUI events for sub-agents
             None, // no pause flag for sub-agents
+            task_manager.clone(), // sub-agent gets its own manager reference for nested tools
         );
 
         let outcome = if let Some(dur) = timeout {

@@ -14,6 +14,7 @@ use genai::chat::ChatMessage;
 
 use crate::agent::agent_loop::{run_agent_session, ShutdownReason};
 use crate::config::AppConfig;
+use crate::orchestration::manager::SubAgentManager;
 use crate::safety::SafetyLayer;
 use crate::tui::app_state::AppState;
 use crate::tui::event::{AgentEvent, ControlSignal};
@@ -33,6 +34,7 @@ pub async fn run_tui(
     config: &AppConfig,
     _safety: &SafetyLayer,
     shutdown: Arc<AtomicBool>,
+    manager: SubAgentManager,
 ) -> anyhow::Result<()> {
     // -- Initialize terminal (raw mode + alternate screen + panic hook).
     let mut terminal = ratatui::init();
@@ -55,6 +57,7 @@ pub async fn run_tui(
     let shutdown_clone = shutdown.clone();
     let pause_clone = pause_flag.clone();
     let event_tx_clone = event_tx.clone();
+    let manager_clone = manager.clone();
 
     tokio::spawn(async move {
         // Create a fresh SafetyLayer for the spawned task (SafetyLayer is not Clone).
@@ -82,6 +85,7 @@ pub async fn run_tui(
                 shutdown_clone.clone(),
                 Some(event_tx_clone.clone()),
                 Some(pause_clone.clone()),
+                manager_clone.clone(),
             )
             .await;
 
@@ -143,6 +147,9 @@ pub async fn run_tui(
 
             // Render tick.
             _ = tick_interval.tick() => {
+                // Refresh sub-agent state from the manager for TUI rendering.
+                app_state.sub_agent_entries = manager.list_all();
+
                 terminal.draw(|frame| {
                     render_ui(&app_state, frame);
                 })?;

@@ -12,8 +12,10 @@ use std::sync::Arc;
 
 use clap::Parser;
 use genai::chat::ChatMessage;
+use tokio_util::sync::CancellationToken;
 
 use agent::agent_loop::ShutdownReason;
+use orchestration::manager::SubAgentManager;
 use safety::SafetyLayer;
 
 #[tokio::main]
@@ -58,14 +60,20 @@ async fn main() -> anyhow::Result<()> {
                 "Safety layer initialized"
             );
 
+            // -- Create root CancellationToken and SubAgentManager (harness-level, survives session restarts)
+            let root_cancel = CancellationToken::new();
+            let manager = SubAgentManager::new(root_cancel.clone(), None, 3, 10);
+
             // -- Set up two-phase Ctrl+C shutdown (once, shared across sessions)
             let shutdown = Arc::new(AtomicBool::new(false));
             let shutdown_clone = shutdown.clone();
+            let root_cancel_clone = root_cancel.clone();
 
             tokio::spawn(async move {
                 // First Ctrl+C: set graceful shutdown flag.
                 tokio::signal::ctrl_c().await.ok();
                 shutdown_clone.store(true, Ordering::SeqCst);
+                root_cancel_clone.cancel();
                 // In headless mode, print message. In TUI mode, the TUI
                 // handles its own quit flow via the 'q' key.
                 if headless {
@@ -93,6 +101,7 @@ async fn main() -> anyhow::Result<()> {
                         shutdown.clone(),
                         None, // event_tx: no TUI in headless mode
                         None, // pause_flag: no pause in headless mode
+                        manager.clone(),
                     )
                     .await?;
 
@@ -148,8 +157,11 @@ async fn main() -> anyhow::Result<()> {
                 }
             } else {
                 // ---- TUI mode (default): full dashboard ----
-                tui::runner::run_tui(&config, &safety, shutdown).await?;
+                tui::runner::run_tui(&config, &safety, shutdown, manager.clone()).await?;
             }
+
+            // -- Shutdown all sub-agents and background processes before exiting
+            manager.shutdown_all().await;
         }
         cli::Commands::Resume { .. } => {
             eprintln!(
