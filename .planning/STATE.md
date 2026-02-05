@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** A local AI agent can autonomously explore, build its own tools, develop its own memory/persistence, and sustain itself across context window restarts -- with minimal human scaffolding.
-**Current focus:** Phase 5 complete. SubAgentManager fully integrated: hierarchical lifecycle tracking, LLM/background spawning, 6 new agent tools, TUI tree widget, clean shutdown. Phase 6 (Advanced Memory) ready to begin.
+**Current focus:** Phase 6 in progress. Discovery persistence and sleep state machine modules complete. Tool dispatch wiring and agent loop integration remain.
 
 ## Current Position
 
-Phase: 5 of 6 (Sub-Agent Orchestration)
-Plan: 5 of 5 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 -- Completed 05-05-PLAN.md
+Phase: 6 of 6 (Extended Tools & Discovery)
+Plan: 2 of 4 in current phase
+Status: In progress
+Last activity: 2026-02-05 -- Completed 06-02-PLAN.md
 
-Progress: [████████████████████████] 100% Phase 5
+Progress: [█████████████████████░░░] 88% (22/25 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
+- Total plans completed: 22
 - Average duration: 4 min
-- Total execution time: 85 min
+- Total execution time: 91 min
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [███████████████████████
 | 3. Context Management | 3/3 | 12 min | 4.0 min |
 | 4. TUI Dashboard | 5/5 | 21 min | 4.2 min |
 | 5. Sub-Agent Orchestration | 5/5 | 26 min | 5.2 min |
+| 6. Extended Tools & Discovery | 2/4 | 6 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-02 (4 min), 05-03 (9 min), 05-04 (6 min), 05-05 (3 min)
-- Trend: Phase 5 complete with efficient final verification
+- Last 5 plans: 05-04 (6 min), 05-05 (3 min), 06-01 (3 min), 06-02 (3 min)
+- Trend: Phase 6 executing efficiently with parallel wave 1 plans
 
 *Updated after each plan completion*
 
@@ -118,6 +119,10 @@ Recent decisions affecting current work:
 - 05-04: All tree nodes open by default in TUI (full hierarchy visible without interaction)
 - 05-05: Clippy warnings treated as build failures via `clippy -- -D warnings` for code quality enforcement
 - 05-05: Human verification checkpoint used to confirm visual/functional correctness beyond automated tests
+- 06-02: Discovery JSONL at workspace/.ouro-discoveries.jsonl with lenient reader (skips corrupt lines)
+- 06-02: SleepState uses std::time::Instant for elapsed tracking (monotonic, no async dependency)
+- 06-02: parse_sleep_args clamps duration to config max_sleep_duration_secs
+- 06-02: Event mode defaults to max_sleep_duration_secs as safety timeout
 
 ### Pending Todos
 
@@ -129,6 +134,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-05T02:20:34Z
-Stopped at: Completed 05-05-PLAN.md (Phase 5 complete)
+Last session: 2026-02-05T03:25:17Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None

@@ -5,3 +5,5 @@ pub mod logging;
 pub mod sleep;
 pub mod system_prompt;
 pub mod tools;
+pub mod web_fetch;
+pub mod web_search;
